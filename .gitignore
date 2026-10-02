@@ -1,0 +1,5 @@
+node_modules/
+# ข้อมูลดิบจาก API (สร้างใหม่ได้ด้วย scripts/fetch-data.mjs)
+cache/
+*.xlsx
+*.xlsb

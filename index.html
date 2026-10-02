@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard ยาสมุนไพร</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: light;
+    --page:#f4f5f2; --surface:#ffffff; --surface-2:#f9f9f7; --hover:#f1f1ee;
+    --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+    --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.09);
+    --brand:#0f766e; --brand-ink:#ffffff; --brand-soft:#e3f2ef;
+    --s1:#2a78d6; --s1-soft:#cde2fb; --s2:#eb6834;
+    --good:#006300; --critical:#d03b3b;
+    --shadow:0 1px 2px rgba(16,24,20,.04), 0 4px 16px rgba(16,24,20,.05);
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])){
+      color-scheme: dark;
+      --page:#0d0d0d; --surface:#1a1a19; --surface-2:#212120; --hover:#262624;
+      --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+      --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.09);
+      --brand:#2bb3a3; --brand-ink:#05201d; --brand-soft:#123a35;
+      --s1:#3987e5; --s1-soft:#1c3b63; --s2:#d95926;
+      --good:#0ca30c; --critical:#e66767;
+      --shadow:none;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --page:#0d0d0d; --surface:#1a1a19; --surface-2:#212120; --hover:#262624;
+    --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.09);
+    --brand:#2bb3a3; --brand-ink:#05201d; --brand-soft:#123a35;
+    --s1:#3987e5; --s1-soft:#1c3b63; --s2:#d95926;
+    --good:#0ca30c; --critical:#e66767;
+    --shadow:none;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--page);color:var(--ink);font-size:14px;line-height:1.5}
+  button,select,input{font:inherit;color:inherit}
+
+  /* ---------- shell ---------- */
+  .app{display:grid;grid-template-columns:272px 1fr;min-height:100vh}
+  .side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--border);padding:20px 14px}
+  .brand{display:flex;gap:12px;align-items:center;padding:4px 8px 20px}
+  .brand .mark{width:40px;height:40px;border-radius:12px;background:var(--brand);display:grid;place-items:center;flex:none}
+  .brand b{display:block;font-size:15px;line-height:1.3}
+  .brand small{color:var(--muted);font-size:12px}
+  .nav-h{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--muted);padding:12px 10px 6px;text-transform:uppercase}
+  nav a{display:flex;gap:10px;align-items:center;padding:9px 10px;border-radius:10px;color:var(--ink-2);text-decoration:none;font-size:14px;margin-bottom:2px}
+  nav a svg{flex:none;opacity:.8}
+  nav a:hover{background:var(--hover);color:var(--ink)}
+  nav a.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+  nav a.on svg{opacity:1}
+  .side .src{margin-top:auto;font-size:12px;color:var(--muted);padding:12px 10px 0;border-top:1px solid var(--border)}
+
+  .main{min-width:0;padding:24px 28px 40px}
+  .top{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  .top .eyebrow{font-size:12px;font-weight:600;color:var(--brand);letter-spacing:.04em}
+  .top h1{margin:2px 0 0;font-size:26px;line-height:1.3;font-weight:700}
+  .top .sp{flex:1}
+  .chip{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+  .chip .dot{width:8px;height:8px;border-radius:50%;background:var(--good)}
+  .iconbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;cursor:pointer;color:var(--ink-2)}
+  .iconbtn:hover{background:var(--hover);color:var(--ink)}
+  .menubtn{display:none}
+
+  /* ---------- filters ---------- */
+  .filters{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) auto;gap:10px;align-items:end;
+    background:color-mix(in srgb,var(--page) 85%,transparent);backdrop-filter:blur(8px);padding:10px 0 14px;margin-bottom:6px}
+  .fl{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .fl span{font-size:12px;color:var(--muted);font-weight:500;padding-left:2px}
+  .fl select{appearance:none;width:100%;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23898781' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+    padding:0 30px 0 12px;cursor:pointer;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+  .fl select:hover{border-color:var(--axis)}
+  .fl select:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+  .fl.on select{border-color:var(--brand);background-color:var(--brand-soft);color:var(--brand);font-weight:600}
+  .clear{height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface);padding:0 14px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;color:var(--ink-2)}
+  .clear:hover:not(:disabled){background:var(--hover);color:var(--ink)}
+  .clear:disabled{opacity:.45;cursor:default}
+  .clear b{background:var(--brand);color:var(--brand-ink);border-radius:999px;font-size:11px;padding:0 7px;line-height:18px}
+
+  /* ---------- grid / cards ---------- */
+  .grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column}
+  .card-h{display:flex;align-items:center;gap:10px;padding:14px 16px 10px}
+  .card-h h3{margin:0;font-size:15px;font-weight:600;flex:1;min-width:0}
+  .card-h .sub{font-size:12px;color:var(--muted);font-weight:400;display:block}
+  .card-b{padding:4px 16px 16px;flex:1;min-height:0}
+
+  .kpi{padding:16px 18px;gap:6px}
+  .kpi .l{font-size:13px;color:var(--ink-2)}
+  .kpi .v{font-size:30px;font-weight:700;line-height:1.15;letter-spacing:-.01em}
+  .kpi .v small{font-size:15px;font-weight:500;color:var(--ink-2);margin-left:4px}
+  .kpi .s{font-size:12px;color:var(--muted)}
+  .kpi.hero{background:linear-gradient(135deg,var(--brand),color-mix(in srgb,var(--brand) 70%,#0b3b5c));color:#fff;border:0}
+  .kpi.hero .l,.kpi.hero .s,.kpi.hero .v small{color:rgba(255,255,255,.82)}
+  .prog{height:8px;border-radius:999px;background:var(--grid);overflow:hidden;margin:6px 0 2px}
+  .prog i{display:block;height:100%;border-radius:999px;background:var(--s1)}
+  .kpi.hero .prog{background:rgba(255,255,255,.25)}
+  .kpi.hero .prog i{background:#fff}
+
+  /* ---------- bar chart ---------- */
+  .bars{display:flex;flex-direction:column;gap:2px;position:relative}
+  .br{display:grid;grid-template-columns:var(--lw,92px) 1fr 86px;align-items:center;gap:10px;padding:3px 4px;border-radius:6px;cursor:default}
+  .br:hover{background:var(--hover)}
+  .br .lb{font-size:13px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .br .tr{position:relative;height:18px;display:flex;gap:2px}
+  .br .sg{height:100%;border-radius:0 4px 4px 0;min-width:2px}
+  .br .sg + .sg{border-radius:0 4px 4px 0}
+  .br .sg:not(:last-child){border-radius:0}
+  .br .vl{font-size:13px;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .tline{position:absolute;top:-4px;bottom:-4px;border-left:1.5px dashed var(--ink-2);pointer-events:none}
+  .tline span{position:absolute;top:-18px;left:4px;font-size:11px;color:var(--ink-2);white-space:nowrap}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--ink-2);margin:0 0 10px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+  /* ---------- tables ---------- */
+  .tools{display:flex;gap:6px;align-items:center}
+  .search{height:30px;width:150px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);padding:0 10px 0 28px;font-size:13px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%23898781' stroke-width='2.5'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:9px center}
+  .search:focus{outline:2px solid var(--brand);outline-offset:0;background-color:var(--surface)}
+  .mini{height:30px;border-radius:8px;border:1px solid var(--border);background:var(--surface);padding:0 9px;cursor:pointer;font-size:12px;color:var(--ink-2)}
+  .mini:hover{background:var(--hover);color:var(--ink)}
+  .tw{overflow:auto;border-top:1px solid var(--grid)}
+  table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
+  th{position:sticky;top:0;z-index:1;background:var(--surface);text-align:left;font-weight:600;color:var(--ink-2);font-size:12px;padding:9px 10px;border-bottom:1px solid var(--grid);cursor:pointer;user-select:none;vertical-align:bottom}
+  th:hover{color:var(--ink)}
+  th .ar{color:var(--brand);margin-left:3px}
+  td{padding:7px 10px;border-bottom:1px solid var(--grid)}
+  tbody tr:hover td{background:var(--hover)}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+  td.n{white-space:nowrap}
+  td.i{color:var(--muted);width:1%;font-variant-numeric:tabular-nums;padding-right:0}
+  td.t{max-width:280px;min-width:130px}
+  td.code{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--ink-2)}
+  tr.tot td{position:sticky;bottom:0;background:var(--surface-2);font-weight:600;border-top:1px solid var(--axis);border-bottom:0}
+  td.db{position:relative}
+  td.db i{position:absolute;right:10px;top:6px;bottom:6px;background:var(--s1-soft);border-radius:3px;z-index:0}
+  td.db b{position:relative;font-weight:inherit}
+  .pill{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end}
+  .pill .pb{width:56px;height:6px;border-radius:999px;background:var(--grid);overflow:hidden}
+  .pill .pb i{display:block;height:100%;background:var(--s1);border-radius:999px}
+  .pg{display:flex;align-items:center;justify-content:flex-end;gap:4px;padding:8px 12px;font-size:12px;color:var(--muted);border-top:1px solid var(--grid)}
+  .pg button{border:1px solid var(--border);background:var(--surface);border-radius:7px;width:28px;height:26px;cursor:pointer;color:var(--ink-2)}
+  .pg button:disabled{opacity:.4;cursor:default}
+  .empty{padding:28px;text-align:center;color:var(--muted)}
+
+  #tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--surface);border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.5;max-width:280px;box-shadow:0 6px 20px rgba(0,0,0,.18);display:none}
+  #tip b{font-weight:600}
+  #overlay{position:fixed;inset:0;z-index:40;display:none;place-items:center;background:color-mix(in srgb,var(--page) 80%,transparent);backdrop-filter:blur(2px);text-align:center;line-height:1.9}
+  #overlay .box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;box-shadow:var(--shadow)}
+  #overlay code{background:var(--surface-2);border:1px solid var(--border);padding:1px 8px;border-radius:6px}
+  .spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--grid);border-top-color:var(--brand);animation:sp 0.8s linear infinite;margin:0 auto 8px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .foot{color:var(--muted);font-size:12px;margin-top:22px}
+
+  @media (max-width:1280px){ .filters{grid-template-columns:repeat(4,minmax(0,1fr))} }
+  @media (max-width:1100px){ .grid > .card{grid-column:span 12 !important} .grid > .kpi{grid-column:span 6 !important} }
+  @media (max-width:900px){
+    .app{grid-template-columns:1fr}
+    .side{position:fixed;inset:0 auto 0 0;width:280px;z-index:30;transform:translateX(-100%);transition:transform .2s}
+    body.nav-open .side{transform:none;box-shadow:0 0 40px rgba(0,0,0,.25)}
+    .menubtn{display:grid}
+    .main{padding:16px}
+    .filters{grid-template-columns:repeat(2,minmax(0,1fr));position:static;backdrop-filter:none;background:none}
+    .top h1{font-size:21px}
+  }
+  @media (max-width:560px){ .grid > .kpi{grid-column:span 12 !important} .search{width:110px} }
+</style>
+</head>
+<body>
+<div id="tip"></div>
+<div id="overlay"></div>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <div class="mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></div>
+      <div><b>ยาสมุนไพร สิทธิ UC</b><small>ตัวชี้วัดมูลค่าการใช้ยาสมุนไพร</small></div>
+    </div>
+    <div class="nav-h">รายงาน</div>
+    <nav id="nav"></nav>
+    <div class="src">ที่มา: MOPH Open Data (s_ttm4)<br>ตารางรหัสยา/หน่วยบริการ: 106 รายการ-KPI มูลค่ายา</div>
+  </aside>
+
+  <div class="main">
+    <div class="top">
+      <button class="iconbtn menubtn" onclick="document.body.classList.toggle('nav-open')" aria-label="เมนู">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div><div class="eyebrow" id="eyebrow"></div><h1 id="title"></h1></div>
+      <div class="sp"></div>
+      <span class="chip"><span class="dot"></span>ข้อมูล ณ <span id="dataDate"></span></span>
+      <button class="iconbtn" id="themeBtn" aria-label="สลับธีม" title="สลับธีมสว่าง/มืด">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button>
+    </div>
+
+    <div class="filters" id="filters"></div>
+    <div class="grid" id="content"></div>
+    <div class="foot">สร้างข้อมูลเมื่อ <span id="builtAt"></span> · ตัวเลขคำนวณตามเกณฑ์ KPI ของกรมการแพทย์แผนไทยและการแพทย์ทางเลือก</div>
+  </div>
+</div>
+
+<script>
+const TARGET_TOTAL = 2_000_000_000, TARGET_REGION = 165_000_000, PAGE = 50;
+const $ = id => document.getElementById(id);
+const fmt = (n, d = 0) => (+n).toLocaleString('en-US', {maximumFractionDigits: d, minimumFractionDigits: 0});
+const fmtM = n => Math.abs(n) >= 1e6 ? fmt(n / 1e6, 1) + ' ล้าน' : fmt(n);
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[ch]));
+
+// ---------- ธีม (จำค่าไว้ในเบราว์เซอร์นี้) ----------
+const store = {get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }};
+if (store.get('theme')) document.documentElement.dataset.theme = store.get('theme');
+$('themeBtn').onclick = () => {
+  const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+  store.set('theme', document.documentElement.dataset.theme);
+};
+
+// ---------- หน้า ----------
+const IC = {
+  coin: '<circle cx="12" cy="12" r="9"/><path d="M14.5 9a2.5 2.5 0 0 0-2.5-1.5c-1.5 0-2.5.8-2.5 2s1 1.7 2.5 2 2.5.8 2.5 2-1 2-2.5 2A2.5 2.5 0 0 1 9.5 15M12 6v1.5M12 16.5V18"/>',
+  check: '<circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+  shield: '<path d="M12 3 5 6v5c0 4.5 3 8.2 7 10 4-1.8 7-5.5 7-10V6Z"/><path d="m9.5 12 2 2 3.5-4"/>',
+  list: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>',
+  hist: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>',
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>',
+  layers: '<path d="m12 3 9 5-9 5-9-5Z"/><path d="m3 13 9 5 9-5"/>',
+};
+const PAGES = {
+  uc69:    {nav: 'มูลค่ายาสมุนไพร UC 2569', icon: 'coin', year: '2569', kind: 'value', vs: 'uc', target: true, title: 'มูลค่าการใช้ยาสมุนไพร สิทธิ UC ปีงบ 2569'},
+  valid:   {nav: 'ตรวจสอบความถูกต้องของรหัสยา', icon: 'check', year: '2569', kind: 'valid', title: 'ความถูกต้องของรหัสยาสมุนไพร 24 หลัก'},
+  gmp:     {nav: 'ยา ED ที่ผลิตจากโรงงาน GMP', icon: 'shield', year: '2569', kind: 'gmp', title: 'ยาสมุนไพร ED ที่ผลิตจากโรงงาน GMP ที่ใช้ในระบบบริการ'},
+  edcount: {nav: 'ยา ED ที่มีการสั่งจ่าย 2569', icon: 'list', year: '2569', kind: 'edcount', title: 'จำนวนรายการยาสมุนไพร ED ที่มีการสั่งจ่ายในปีงบ 2569'},
+  uc68:    {nav: 'มูลค่ายาสมุนไพร UC 2568', icon: 'hist', year: '2568', kind: 'value', vs: 'uc', target: true, title: 'มูลค่าการใช้ยาสมุนไพร สิทธิ UC ปีงบ 2568'},
+  all69:   {nav: 'มูลค่ายาสมุนไพร ทุกสิทธิ 2569', icon: 'users', year: '2569', kind: 'value', vs: 'all', target: false, title: 'มูลค่าการใช้ยาสมุนไพร ทุกสิทธิ ปีงบ 2569'},
+  noned:   {nav: 'ED + NONED ทุกสิทธิ 2569', icon: 'layers', year: '2569', kind: 'noned', title: 'มูลค่าการใช้ยาสมุนไพร ทุกสิทธิ รวม ED และ NONED ปีงบ 2569'},
+};
+const svg = (name, s = 18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[name]}</svg>`;
+$('nav').innerHTML = Object.entries(PAGES).map(([id, p]) => `<a href="#${id}" data-p="${id}">${svg(p.icon)}<span>${p.nav}</span></a>`).join('');
+$('nav').onclick = () => document.body.classList.remove('nav-open');
+
+// ---------- ข้อมูล (data-<ปี>.js โหลดเมื่อจำเป็น) ----------
+let ds = null, page = null;
+function loadYear(y) {
+  return new Promise((res, rej) => {
+    if (window.DATASETS?.[y]) return res(DATASETS[y]);
+    const s = document.createElement('script');
+    s.src = `data-${y}.js`;
+    s.onload = () => window.DATASETS?.[y] ? res(DATASETS[y]) : rej();
+    s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+function overlay(html) { $('overlay').innerHTML = html ? `<div class="box">${html}</div>` : ''; $('overlay').style.display = html ? 'grid' : 'none'; }
+
+// ---------- tooltip ----------
+document.addEventListener('mousemove', e => {
+  const el = e.target.closest('[data-tip]'), tip = $('tip');
+  if (!el) { tip.style.display = 'none'; return; }
+  tip.innerHTML = el.dataset.tip; tip.style.display = 'block';
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.min(e.clientX + 14, innerWidth - w - 8) + 'px';
+  tip.style.top = (e.clientY + h + 20 > innerHeight ? e.clientY - h - 12 : e.clientY + 16) + 'px';
+});
+
+// ---------- ตัวกรอง ----------
+// hosp: [code, name, typeIdx, sangkatIdx, region, provIdx, ampIdx, tamIdx]; amphoe/tambon key = "จังหวัด|อำเภอ(|ตำบล)"
+const last = k => k.split('|').pop();
+const FILTERS = {
+  sangkat: {label: 'สังกัด',           col: 3, name: i => ds.dict.sangkat[i]},
+  type:    {label: 'ประเภทหน่วยบริการ', col: 2, name: i => ds.dict.type[i]},
+  region:  {label: 'เขตสุขภาพ',        col: 4, name: i => i ? `เขตสุขภาพที่ ${i}` : 'ไม่ทราบเขต'},
+  prov:    {label: 'จังหวัด',          col: 5, name: i => ds.dict.province[i]},
+  amp:     {label: 'อำเภอ',           col: 6, name: i => last(ds.dict.amphoe[i])},
+  tam:     {label: 'ตำบล',            col: 7, name: i => last(ds.dict.tambon[i])},
+  hos:     {label: 'หน่วยบริการ',       col: 0, name: i => ds.hosp[i][1], byIndex: true},
+};
+const state = Object.fromEntries(Object.keys(FILTERS).map(k => [k, null]));
+const val = (h, k) => FILTERS[k].byIndex ? h : ds.hosp[h][FILTERS[k].col];
+const passes = (h, except) => Object.keys(FILTERS).every(k => k === except || state[k] === null || val(h, k) === state[k]);
+let ok = new Uint8Array(0);
+
+$('filters').innerHTML = Object.entries(FILTERS).map(([k, F]) => `<label class="fl" data-f="${k}"><span>${F.label}</span><select></select></label>`).join('')
+  + `<button class="clear" id="clearBtn" onclick="resetAll()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>ล้างตัวกรอง <b id="fcount" hidden></b></button>`;
+
+// ตัวเลือกของแต่ละตัวกรอง = ค่าที่ยังเหลือเมื่อใช้ตัวกรองอื่นทั้งหมด (แบบ Looker)
+function fillSelects() {
+  document.querySelectorAll('#filters .fl').forEach(fl => {
+    const k = fl.dataset.f, F = FILTERS[k], sel = fl.querySelector('select');
+    const opts = new Map();
+    for (let h = 0; h < ds.hosp.length; h++) if (passes(h, k)) { const v = val(h, k); if (!opts.has(v)) opts.set(v, F.name(v)); }
+    const sorted = [...opts].sort((a, b) => k === 'region' ? a[0] - b[0] : a[1].localeCompare(b[1], 'th'));
+    sel.innerHTML = `<option value="">ทั้งหมด (${fmt(sorted.length)})</option>` + sorted.map(([v, n]) =>
+      `<option value="${v}" ${state[k] === v ? 'selected' : ''}>${esc(n)}</option>`).join('');
+    fl.classList.toggle('on', state[k] !== null);
+    sel.title = state[k] === null ? F.label : F.name(state[k]);
+    sel.onchange = () => { state[k] = sel.value === '' ? null : +sel.value; render(); };
+  });
+  const n = Object.values(state).filter(v => v !== null).length;
+  $('clearBtn').disabled = !n; $('fcount').hidden = !n; $('fcount').textContent = n;
+}
+
+// ---------- การรวมข้อมูล ----------
+// codes: [didstd, kind(0 ไม่ถูกต้อง/1 ED/2 NONED), drugIdx, ราคาต่อคอร์ส, gmp(1 GMP/2 ไม่พบ GMP/3 ไม่พบผู้ผลิต), nameIdx, mfrIdx]
+const KEY = {
+  region: h => ds.hosp[h][4], prov: h => ds.hosp[h][5], amp: h => ds.hosp[h][6], tam: h => ds.hosp[h][7],
+  hos: h => h, drug: (h, c) => c[2], name: (h, c) => c[5], code: (h, c, ci) => ci, all: () => 0,
+};
+const NAME = {
+  region: FILTERS.region.name, prov: FILTERS.prov.name, amp: FILTERS.amp.name, tam: FILTERS.tam.name, hos: FILTERS.hos.name,
+  drug: i => ds.dict.drug[i], name: i => ds.dict.name[i], all: () => 'รวมทั้งหมด',
+};
+function group(levels, keep, init, add) {
+  const maps = Object.fromEntries(levels.map(l => [l, new Map()]));
+  const F = ds.facts;
+  for (let k = 0; k < F.h.length; k++) {
+    const h = F.h[k];
+    if (!ok[h]) continue;
+    const ci = F.c[k], c = ds.codes[ci];
+    if (keep && !keep(c)) continue;
+    for (const l of levels) {
+      const key = KEY[l](h, c, ci), m = maps[l];
+      let a = m.get(key);
+      if (!a) m.set(key, a = init());
+      add(a, k, c, ci, h);
+    }
+  }
+  return maps;
+}
+const rowsOf = (map, level, fn) => [...map].map(([key, a]) => fn(NAME[level](key), a, key)).filter(Boolean);
+const pctOf = (a, b) => b ? a / b * 100 : 0;
+const mean = xs => xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : 0;
+const shortRegion = n => n.replace('เขตสุขภาพที่ ', 'เขต ');
+
+// =====================================================================
+// layout: KPI + การ์ดกราฟ/ตาราง บน grid 12 คอลัมน์
+// =====================================================================
+function layout(p, kpis, cards) {
+  $('eyebrow').textContent = `ปีงบประมาณ ${p.year}`;
+  $('title').textContent = p.title;
+  document.title = `${p.nav} · Dashboard ยาสมุนไพร`;
+  const span = Math.max(3, Math.floor(12 / kpis.length));
+  $('content').innerHTML =
+    kpis.map((k, i) => `<div class="card kpi ${i === 0 ? 'hero' : ''}" style="grid-column:span ${span}">
+      <div class="l">${k.label}</div><div class="v" id="${k.id}">–</div>
+      ${k.prog ? `<div class="prog"><i id="${k.id}-bar" style="width:0"></i></div>` : ''}<div class="s" id="${k.id}-s">${k.sub || ''}</div></div>`).join('')
+    + cards.map(c => `<section class="card" style="grid-column:span ${c.span || 6}">
+      <div class="card-h"><h3>${c.title}${c.sub ? `<span class="sub">${c.sub}</span>` : ''}</h3>
+        ${c.chart ? '' : `<div class="tools"><input class="search" placeholder="ค้นหา" data-t="${c.id}"><button class="mini" data-csv="${c.id}" title="ดาวน์โหลด CSV">CSV</button></div>`}</div>
+      <div class="card-b" ${c.chart ? '' : 'style="padding:0"'}><div id="${c.id}" ${c.h ? `style="${c.chart ? 'min-height' : '--h'}:${c.h}px"` : ''}></div></div></section>`).join('');
+  $('content').querySelectorAll('.search').forEach(inp => inp.oninput = () => { const t = tables[inp.dataset.t]; t.q = inp.value.trim().toLowerCase(); t.page = 0; t.draw(); });
+  $('content').querySelectorAll('[data-csv]').forEach(b => b.onclick = () => tables[b.dataset.csv].csv());
+}
+const kpi = (id, v, sub, bar) => {
+  $(id).innerHTML = v;
+  if (sub != null) $(id + '-s').innerHTML = sub;
+  if (bar != null && $(id + '-bar')) $(id + '-bar').style.width = Math.min(bar, 100) + '%';
+};
+
+// ---------- ตาราง: เรียง / ค้นหา / แบ่งหน้า / CSV ----------
+let tables = {};
+function table(id, cols, sort, h = 420) {
+  const t = tables[id] = {el: $(id), cols, sort, page: 0, rows: [], total: null, q: ''};
+  t.view = () => {
+    const {i, dir} = t.sort;
+    let rows = t.q ? t.rows.filter(r => cols.some((c, j) => !c.n && String(r[j]).toLowerCase().includes(t.q))) : t.rows;
+    return [...rows].sort((a, b) => typeof a[i] === 'number' ? (a[i] - b[i]) * dir : String(a[i]).localeCompare(String(b[i]), 'th', {numeric: true}) * dir);
+  };
+  t.draw = () => {
+    const rows = t.view(), pages = Math.max(1, Math.ceil(rows.length / PAGE));
+    t.page = Math.min(t.page, pages - 1);
+    const start = t.page * PAGE, view = rows.slice(start, start + PAGE);
+    const max = cols.map((c, j) => c.bar ? Math.max(...t.rows.map(r => r[j]), 1) : 0);
+    const cell = (c, v, j) => {
+      if (c.pct) return `<td class="n"><span class="pill">${fmt(v, 2)}<span class="pb"><i style="width:${Math.min(Math.max(v, 0), 100)}%"></i></span></span></td>`;
+      if (c.bar) return `<td class="n db"><i style="width:calc(${Math.max(v, 0) / max[j] * 100}% - 20px)"></i><b>${fmt(v, c.d)}</b></td>`;
+      if (c.n) return `<td class="n">${fmt(v, c.d)}</td>`;
+      return `<td class="${c.code ? 'code' : 't'}">${esc(v)}</td>`;
+    };
+    t.el.innerHTML = `<div class="tw" style="max-height:${h}px"><table><thead><tr><th></th>${cols.map((c, k) =>
+        `<th class="${c.n ? 'n' : ''}" data-i="${k}">${c.t}${t.sort.i === k ? `<span class="ar">${t.sort.dir < 0 ? '↓' : '↑'}</span>` : ''}</th>`).join('')}</tr></thead>
+      <tbody>${view.length ? view.map((r, k) => `<tr><td class="i">${start + k + 1}</td>${cols.map((c, j) => cell(c, r[j], j)).join('')}</tr>`).join('')
+        : `<tr><td colspan="${cols.length + 1}" class="empty">ไม่พบข้อมูล</td></tr>`}
+      ${t.total && !t.q ? `<tr class="tot"><td></td>${cols.map((c, j) => j === 0 ? '<td>รวมทั้งหมด</td>' : t.total[j] == null ? '<td></td>' : `<td class="n">${fmt(t.total[j], c.pct ? 2 : c.d)}</td>`).join('')}</tr>` : ''}</tbody></table></div>
+      <div class="pg"><span>${rows.length ? fmt(start + 1) : 0}–${fmt(start + view.length)} จาก ${fmt(rows.length)}</span>
+        <button data-p="-1" ${t.page === 0 ? 'disabled' : ''} aria-label="ก่อนหน้า">‹</button><button data-p="1" ${t.page >= pages - 1 ? 'disabled' : ''} aria-label="ถัดไป">›</button></div>`;
+    t.el.querySelectorAll('th[data-i]').forEach(th => th.onclick = () => {
+      const k = +th.dataset.i; t.sort = {i: k, dir: t.sort.i === k ? -t.sort.dir : (cols[k].n ? -1 : 1)}; t.page = 0; t.draw();
+    });
+    t.el.querySelectorAll('.pg button').forEach(b => b.onclick = () => { t.page += +b.dataset.p; t.draw(); t.el.querySelector('.tw').scrollTop = 0; });
+  };
+  t.csv = () => {
+    const q = v => /[",\n]/.test(v) ? `"${String(v).replace(/"/g, '""')}"` : v;
+    const lines = [cols.map(c => q(c.t)).join(','), ...t.view().map(r => cols.map((c, j) => q(c.n ? Math.round(r[j] * 100) / 100 : r[j])).join(','))];
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\n')], {type: 'text/csv'}));
+    a.download = `${page.nav} - ${t.el.closest('.card').querySelector('h3').firstChild.textContent}.csv`;
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+  return t;
+}
+const setRows = (id, rows, total) => { const t = tables[id]; t.rows = rows; t.total = total; t.page = 0; t.draw(); };
+const ASC = i => ({i, dir: 1}), DESC = i => ({i, dir: -1});
+
+// ---------- กราฟแท่งแนวนอน ----------
+// items: [{label, segs:[{v, color}], text, tip}]
+function bars(id, items, {max, target, legend, lw} = {}) {
+  const m = max || Math.max(...items.map(it => it.segs.reduce((s, x) => s + x.v, 0)), 1);
+  $(id).innerHTML = (legend ? `<div class="legend">${legend.map(([n, c]) => `<span><i style="background:${c}"></i>${n}</span>`).join('')}</div>` : '')
+    + `<div class="bars" style="--lw:${lw || 92}px">${items.map(it => `<div class="br" data-tip="${esc(it.tip)}">
+      <span class="lb">${esc(it.label)}</span><span class="tr">${it.segs.map(s => `<span class="sg" style="width:${s.v / m * 100}%;background:${s.color}"></span>`).join('')}
+      ${target ? `<span class="tline" style="left:${target.v / m * 100}%"></span>` : ''}</span><span class="vl">${it.text}</span></div>`).join('')}</div>`;
+  if (target) {   // ป้ายเส้นเป้าหมายแสดงครั้งเดียวที่แถวแรก
+    const first = $(id).querySelector('.tline'); if (first) first.innerHTML = `<span>${target.label}</span>`;
+    $(id).querySelector('.bars').style.marginTop = '18px';
+  }
+  if (!items.length) $(id).innerHTML = '<div class="empty">ไม่พบข้อมูล</div>';
+}
+const S1 = 'var(--s1)', S2 = 'var(--s2)';
+const tipRow = (k, v) => `${k}: <b>${v}</b>`;
+
+// =====================================================================
+// หน้ามูลค่า: UC 2569, UC 2568, ทุกสิทธิ 2569   (ยา ED, มูลค่า = ครั้ง × ราคาต่อคอร์ส)
+// =====================================================================
+const VALUE = {
+  setup(p) {
+    const vs = p.vs === 'uc' ? 'vs_uc' : 'vs_all';
+    const kp = p.target
+      ? [{id: 'k1', label: 'มูลค่ายาสมุนไพร (ครั้ง × ราคาคอร์ส)'}, {id: 'k2', label: 'ร้อยละของเป้าหมาย', prog: true}, {id: 'k3', label: `จำนวนครั้งที่สั่งจ่าย (${vs})`}, {id: 'k4', label: 'หน่วยบริการที่สั่งจ่ายยา ED'}]
+      : [{id: 'k1', label: 'มูลค่ายาสมุนไพรทุกสิทธิ (ครั้ง × ราคาคอร์ส)'}, {id: 'k3', label: `จำนวนครั้งที่สั่งจ่าย (${vs})`}, {id: 'k4', label: 'หน่วยบริการที่สั่งจ่ายยา ED'}, {id: 'k5', label: 'รายการยา ED ที่สั่งจ่าย'}];
+    layout(p, kp, [
+      {id: 'c-region', chart: true, span: 7, title: p.target ? 'ผลงานรายเขตสุขภาพเทียบเป้าหมาย' : 'มูลค่ารายเขตสุขภาพ', sub: p.target ? 'ร้อยละของเป้าหมาย 165 ล้านบาทต่อเขต' : 'ล้านบาท'},
+      {id: 'c-top', chart: true, span: 5, title: '10 อันดับยาสมุนไพรมูลค่าสูงสุด', sub: 'ล้านบาท'},
+      {id: 't-region', title: 'เขตสุขภาพ'}, {id: 't-prov', title: 'จังหวัด'},
+      {id: 't-drug', title: 'ยาสมุนไพร ED'}, {id: 't-amp', title: 'อำเภอ'},
+      {id: 't-tam', title: 'ตำบล'}, {id: 't-hos', title: 'หน่วยบริการ'},
+    ]);
+    const N = {t: vs, n: 1}, V = {t: 'มูลค่า (บาท)', n: 1, d: 1, bar: 1};
+    table('t-region', p.target ? [{t: 'เขตสุขภาพ'}, N, {...V, d: 0}, {t: 'เป้าหมาย', n: 1}, {t: 'ร้อยละ', n: 1, pct: 1}] : [{t: 'เขตสุขภาพ'}, N, V], ASC(0));
+    table('t-prov', [{t: 'จังหวัด'}, N, V], DESC(2));
+    table('t-drug', [{t: 'ยาสมุนไพร ED'}, N, {t: 'ราคาต่อคอร์ส', n: 1, d: 2}, V], DESC(3));
+    table('t-amp', [{t: 'อำเภอ'}, N, V], DESC(2));
+    table('t-tam', [{t: 'ตำบล'}, N, V], DESC(2));
+    table('t-hos', [{t: 'หน่วยบริการ'}, N, V], DESC(2));
+  },
+  render(p) {
+    const vsArr = p.vs === 'uc' ? ds.facts.uc : ds.facts.all;
+    const g = group(['all', 'region', 'prov', 'amp', 'tam', 'hos', 'drug'], c => c[1] === 1, () => [0, 0],
+      (a, k, c) => { const v = vsArr[k]; a[0] += v; a[1] += v * c[3]; });
+    const simple = l => rowsOf(g[l], l, (n, a) => a[0] ? [n, a[0], a[1]] : null);
+    const [totVs, totVal] = g.all.get(0) || [0, 0];
+    const target = state.region !== null ? TARGET_REGION : TARGET_TOTAL;
+    const nHos = [...g.hos.values()].filter(a => a[0]).length;
+    const drugs = rowsOf(g.drug, 'drug', (n, a) => a[0] ? [n, a[0], a[1] / a[0], a[1]] : null);
+
+    kpi('k1', `${fmt(totVal / 1e6, 2)}<small>ล้านบาท</small>`, `${fmt(totVal, 1)} บาท`);
+    if (p.target) {
+      const pc = totVal / target * 100;
+      kpi('k2', `${fmt(pc, 2)}<small>%</small>`, `เป้าหมาย ${fmt(target / 1e6)} ล้านบาท · ${pc >= 100 ? 'ถึงเป้าแล้ว' : `ขาดอีก ${fmt((target - totVal) / 1e6, 1)} ล้านบาท`}`, pc);
+    } else kpi('k5', fmt(drugs.length), 'รายการ');
+    kpi('k3', fmt(totVs), `ราคาเฉลี่ย ${fmt(totVs ? totVal / totVs : 0, 2)} บาท/ครั้ง`);
+    kpi('k4', fmt(nHos), 'แห่ง');
+
+    const regs = rowsOf(g.region, 'region', (n, a, key) => key && a[0] ? {n, key, vs: a[0], v: a[1]} : null).sort((a, b) => a.key - b.key);
+    if (p.target) {
+      const mx = Math.max(110, ...regs.map(r => r.v / TARGET_REGION * 100));
+      bars('c-region', regs.map(r => { const pc = r.v / TARGET_REGION * 100; return {label: shortRegion(r.n), segs: [{v: pc, color: S1}], text: fmt(pc, 1) + '%',
+        tip: `<b>${r.n}</b><br>${tipRow('มูลค่า', fmt(r.v) + ' บาท')}<br>${tipRow('ร้อยละของเป้าหมาย', fmt(pc, 2))}`}; }), {max: mx, target: {v: 100, label: 'เป้าหมาย 100%'}});
+    } else {
+      bars('c-region', regs.map(r => ({label: shortRegion(r.n), segs: [{v: r.v, color: S1}], text: fmt(r.v / 1e6, 1),
+        tip: `<b>${r.n}</b><br>${tipRow('มูลค่า', fmt(r.v) + ' บาท')}<br>${tipRow('จำนวนครั้ง', fmt(r.vs))}`})));
+    }
+    const top = [...drugs].sort((a, b) => b[3] - a[3]).slice(0, 10);
+    bars('c-top', top.map(d => ({label: d[0], segs: [{v: d[3], color: S1}], text: fmt(d[3] / 1e6, 1),
+      tip: `<b>${d[0]}</b><br>${tipRow('มูลค่า', fmt(d[3]) + ' บาท')}<br>${tipRow('จำนวนครั้ง', fmt(d[1]))}<br>${tipRow('ราคาต่อคอร์ส', fmt(d[2], 2))}`})), {lw: 150});
+
+    setRows('t-region', p.target
+      ? rowsOf(g.region, 'region', (n, a, key) => key && a[0] ? [n, a[0], a[1], TARGET_REGION, a[1] / TARGET_REGION * 100] : null)
+      : simple('region'), p.target ? [null, totVs, totVal, target, totVal / target * 100] : [null, totVs, totVal]);
+    for (const l of ['prov', 'amp', 'tam', 'hos']) setRows('t-' + l, simple(l), [null, totVs, totVal]);
+    setRows('t-drug', drugs, [null, totVs, totVs ? totVal / totVs : 0, totVal]);
+  },
+};
+
+// ---------- ตรวจสอบความถูกต้องของรหัสยา ----------
+// รหัสที่ถูกต้อง = มีในฐานรหัสยา 24 หลักของกรมการแพทย์แผนไทยฯ (นับทุกรหัส ทั้ง ED และนอกบัญชี, ไม่นับรหัสซ้ำ)
+const LEVELS = [['region', 'เขตสุขภาพ'], ['prov', 'จังหวัด'], ['amp', 'อำเภอ'], ['tam', 'ตำบล'], ['hos', 'หน่วยบริการ']];
+const RATIO = (title, sub, kLabels, colLabels, isGood, keep, detail) => ({
+  setup(p) {
+    layout(p, kLabels.map((label, i) => ({id: 'k' + (i + 1), label, prog: i === 3})), [
+      {id: 'c-region', chart: true, span: 12, title, sub},
+      ...LEVELS.map(([l, t]) => ({id: 't-' + l, title: t, span: l === 'hos' ? 12 : 6})),
+      {id: 't-detail', title: detail.title, sub: detail.sub, span: 12},
+    ]);
+    const C = t => [{t}, ...colLabels.map(t => ({t, n: 1})), {t: 'ร้อยละ', n: 1, pct: 1}];
+    for (const [l, t] of LEVELS) table('t-' + l, C(t), l === 'region' ? ASC(0) : DESC(1));
+    table('t-detail', detail.cols, detail.sort, 520);
+  },
+  render() {
+    const g = group(['all', ...LEVELS.map(l => l[0])], keep, () => new Set(), (a, k, c, ci) => a.add(ci));
+    const row = (n, s) => { let v = 0; for (const ci of s) if (isGood(ds.codes[ci])) v++; return [n, s.size, v, s.size - v, pctOf(v, s.size)]; };
+    const tot = row('', g.all.get(0) || new Set());
+    for (const [l] of LEVELS) setRows('t-' + l, rowsOf(g[l], l, row), [null, tot[1], tot[2], tot[3], tot[4]]);
+    const regs = rowsOf(g.region, 'region', (n, s, key) => key ? {key, r: row(n, s)} : null).sort((a, b) => a.key - b.key);
+    const avg = mean(regs.map(x => x.r[4]));
+    kpi('k1', fmt(tot[1]), 'รหัส (ไม่นับรหัสซ้ำ)'); kpi('k2', fmt(tot[2]), `${fmt(pctOf(tot[2], tot[1]), 2)}% ของทั้งหมด`);
+    kpi('k3', fmt(tot[3]), 'รหัส'); kpi('k4', `${fmt(avg, 2)}<small>%</small>`, `เฉลี่ยจาก ${regs.length} เขต (แบบ Data Studio)`, avg);
+    bars('c-region', regs.map(({r}) => ({label: shortRegion(r[0]), segs: [{v: r[4], color: S1}], text: fmt(r[4], 1) + '%',
+      tip: `<b>${r[0]}</b><br>${tipRow(colLabels[0], fmt(r[1]))}<br>${tipRow(colLabels[1], fmt(r[2]))}<br>${tipRow(colLabels[2], fmt(r[3]))}`})), {max: 100});
+    setRows('t-detail', detail.rows(), null);
+  },
+});
+const VALID = RATIO('ร้อยละความถูกต้องของรหัสยารายเขตสุขภาพ', 'รหัสที่ถูกต้อง = พบในฐานรหัสยา 24 หลักของกรมการแพทย์แผนไทยฯ',
+  ['รหัสยาสมุนไพรทั้งหมด', 'รหัสยาที่ถูกต้อง', 'รหัสยาที่ไม่ถูกต้อง', 'ร้อยละความถูกต้อง'],
+  ['รหัสยาทั้งหมด', 'ถูกต้อง', 'ไม่ถูกต้อง'], c => c[1] !== 0, null, {
+    title: 'รายการรหัสยาที่ไม่ถูกต้อง', sub: 'ไม่พบในฐานรหัสยา 24 หลัก — ควรตรวจสอบและแก้ไขในระบบของหน่วยบริการ',
+    cols: [{t: 'ยาสมุนไพร'}, {t: 'didstd', code: 1}, {t: 'หน่วยบริการ'}, {t: 'hospcode', code: 1}, {t: 'จังหวัด'}, {t: 'vs_all', n: 1}, {t: 'vs_uc', n: 1}], sort: DESC(5),
+    rows() {
+      const F = ds.facts, out = [];
+      for (let k = 0; k < F.h.length; k++) {
+        const h = F.h[k], c = ds.codes[F.c[k]];
+        if (ok[h] && c[1] === 0) out.push([ds.dict.name[c[5]], c[0], ds.hosp[h][1], ds.hosp[h][0], ds.dict.province[ds.hosp[h][5]], F.all[k], F.uc[k]]);
+      }
+      return out;
+    },
+  });
+// นับรหัสยา ED (ไม่นับซ้ำ); ผ่าน GMP = ผู้ผลิตได้รับ GMP หรือได้รับยกเว้น (ผลิตโดยโรงพยาบาล)
+const GMP = RATIO('ร้อยละรหัสยา ED จากแหล่งผลิต GMP รายเขตสุขภาพ', 'ผ่าน = ผู้ผลิตได้รับรอง GMP หรือได้รับยกเว้น (ผลิตโดยโรงพยาบาล)',
+  ['รหัสยา ED ที่พบในระบบ', 'จากแหล่งผลิต GMP', 'ยังไม่พบข้อมูล GMP', 'ร้อยละ GMP'],
+  ['รหัสยา ED ที่พบ', 'แหล่งผลิต GMP', 'ยังไม่พบ GMP'], c => c[4] === 1, c => c[1] === 1, {
+    title: 'รหัสยา ED ที่ยังไม่พบข้อมูลการรับรอง GMP ของแหล่งผลิต', sub: 'หากแหล่งผลิตได้รับ GMP แล้ว ให้แจ้งปรับปรุงฐานข้อมูลแหล่งผลิต',
+    cols: [{t: 'แหล่งผลิตยา'}, {t: 'ยาสมุนไพร ED'}, {t: 'didstd', code: 1}, {t: 'vs_all', n: 1}, {t: 'vs_uc', n: 1}], sort: DESC(3),
+    rows() {
+      const d = group(['code'], c => c[1] === 1 && c[4] !== 1, () => [0, 0], (a, k) => { a[0] += ds.facts.all[k]; a[1] += ds.facts.uc[k]; });
+      return [...d.code].map(([ci, a]) => { const c = ds.codes[ci]; return [ds.dict.mfr[c[6]], ds.dict.drug[c[2]], c[0], a[0], a[1]]; });
+    },
+  });
+
+// ---------- ยาสมุนไพร ED ที่มีการสั่งจ่าย ----------
+// จำนวนรายการยา ED (ชื่อยา ไม่นับซ้ำ) และจำนวนหน่วยบริการที่สั่งจ่ายยา ED ตั้งแต่ 10 รายการขึ้นไป
+const EDCOUNT = {
+  setup(p) {
+    layout(p, [{id: 'k1', label: 'รายการยา ED ที่มีการสั่งจ่าย'}, {id: 'k2', label: 'หน่วยบริการที่สั่งจ่ายยา ED'}, {id: 'k3', label: 'หน่วยบริการที่มียา ED ≥ 10 รายการ'}, {id: 'k4', label: 'ร้อยละหน่วยบริการที่มียา ED ≥ 10 รายการ', prog: true}], [
+      {id: 'c-region', chart: true, span: 6, title: 'หน่วยบริการที่มียา ED ≥ 10 รายการ รายเขต', sub: 'ร้อยละของหน่วยบริการที่สั่งจ่ายยา ED'},
+      {id: 'c-top', chart: true, span: 6, title: '12 อันดับยา ED ที่หน่วยบริการสั่งจ่ายมากที่สุด', sub: 'จำนวนหน่วยบริการ (แห่ง)'},
+      {id: 't-region', title: 'เขตสุขภาพ'}, {id: 't-prov', title: 'จังหวัด'},
+      {id: 't-drug', title: 'ยาสมุนไพร ED'}, {id: 't-amp', title: 'อำเภอ'},
+      {id: 't-hos', title: 'หน่วยบริการ', span: 12},
+    ]);
+    const C = t => [{t}, {t: 'รายการยา ED', n: 1}, {t: 'หน่วยบริการที่สั่งจ่าย', n: 1}, {t: 'ยา ED ≥ 10 รายการ (แห่ง)', n: 1}, {t: 'ร้อยละ', n: 1, pct: 1}];
+    table('t-region', C('เขตสุขภาพ'), ASC(0)); table('t-prov', C('จังหวัด'), DESC(1)); table('t-amp', C('อำเภอ'), DESC(1));
+    table('t-drug', [{t: 'ยาสมุนไพร ED'}, {t: 'หน่วยบริการที่สั่งจ่าย', n: 1, bar: 1}, {t: 'vs_uc', n: 1}, {t: 'vs_all', n: 1}], DESC(1));
+    table('t-hos', [{t: 'หน่วยบริการ'}, {t: 'จังหวัด'}, {t: 'รายการยา ED', n: 1, bar: 1}, {t: 'ยา ED ≥ 10 รายการ', n: 1}], DESC(2));
+  },
+  render() {
+    const g = group(['hos', 'drug'], c => c[1] === 1, () => ({s: new Set(), uc: 0, all: 0}),
+      (a, k, c) => { a.s.add(c[2]); a.uc += ds.facts.uc[k]; a.all += ds.facts.all[k]; });
+    const drugHos = group(['drug'], c => c[1] === 1, () => new Set(), (a, k, c, ci, h) => a.add(h)).drug;
+    const roll = l => {
+      const m = new Map();
+      for (const [h, a] of g.hos) {
+        const key = KEY[l](h);
+        const r = m.get(key) || m.set(key, {s: new Set(), n: 0, n10: 0}).get(key);
+        for (const d of a.s) r.s.add(d);
+        r.n++; if (a.s.size >= 10) r.n10++;
+      }
+      return m;
+    };
+    const R = (n, r) => [n, r.s.size, r.n, r.n10, pctOf(r.n10, r.n)];
+    for (const l of ['region', 'prov', 'amp']) setRows('t-' + l, rowsOf(roll(l), l, R), null);
+    const all = roll('all').get(0) || {s: new Set(), n: 0, n10: 0}, pc = pctOf(all.n10, all.n);
+    kpi('k1', fmt(all.s.size), 'รายการ (ชื่อยาไม่นับซ้ำ)'); kpi('k2', fmt(all.n), 'แห่ง'); kpi('k3', fmt(all.n10), 'แห่ง'); kpi('k4', `${fmt(pc, 2)}<small>%</small>`, null, pc);
+
+    const regs = rowsOf(roll('region'), 'region', (n, r, key) => key ? {key, r: R(n, r)} : null).sort((a, b) => a.key - b.key);
+    bars('c-region', regs.map(({r}) => ({label: shortRegion(r[0]), segs: [{v: r[4], color: S1}], text: fmt(r[4], 1) + '%',
+      tip: `<b>${r[0]}</b><br>${tipRow('รายการยา ED', fmt(r[1]))}<br>${tipRow('หน่วยบริการที่สั่งจ่าย', fmt(r[2]))}<br>${tipRow('ยา ED ≥ 10 รายการ', fmt(r[3]) + ' แห่ง')}`})), {max: 100});
+    const drugs = rowsOf(g.drug, 'drug', (n, a, key) => [n, drugHos.get(key).size, a.uc, a.all]);
+    bars('c-top', [...drugs].sort((a, b) => b[1] - a[1]).slice(0, 12).map(d => ({label: d[0], segs: [{v: d[1], color: S1}], text: fmt(d[1]),
+      tip: `<b>${d[0]}</b><br>${tipRow('หน่วยบริการที่สั่งจ่าย', fmt(d[1]) + ' แห่ง')}<br>${tipRow('vs_uc', fmt(d[2]))}`})), {lw: 150});
+    setRows('t-drug', drugs, null);
+    setRows('t-hos', [...g.hos].map(([h, a]) => [ds.hosp[h][1], ds.dict.province[ds.hosp[h][5]], a.s.size, a.s.size >= 10 ? 1 : 0]), [null, null, all.s.size, all.n10]);
+  },
+};
+
+// ---------- ED + NONED ทุกสิทธิ ----------
+// ED = vs_all × ราคาต่อคอร์ส; NONED (รหัสถูกต้องแต่ไม่ใช่ ED) = vs_all × ราคาขายเฉลี่ยต่อครั้งของยานั้นทั้งประเทศ
+const NONED = {
+  setup(p) {
+    layout(p, [{id: 'k1', label: 'มูลค่ายา ED + NONED (ครั้ง × คอร์ส)'}, {id: 'k2', label: 'มูลค่ายา ED'}, {id: 'k3', label: 'มูลค่ายา NONED'}, {id: 'k4', label: 'ราคาขายรวม ED + NONED'}], [
+      {id: 'c-region', chart: true, span: 12, title: 'มูลค่ายา ED และ NONED รายเขตสุขภาพ', sub: 'ล้านบาท (ครั้ง × ราคาคอร์ส) ทุกสิทธิ'},
+      {id: 't-region', title: 'เขตสุขภาพ', span: 12}, {id: 't-prov', title: 'จังหวัด', span: 12},
+      {id: 't-drug', title: 'ยาสมุนไพร ED'}, {id: 't-name', title: 'ยาสมุนไพร NONED'},
+    ]);
+    const C = t => [{t}, {t: 'ครั้ง ED', n: 1}, {t: 'มูลค่า ED', n: 1, d: 1}, {t: 'ราคาขาย ED', n: 1, d: 2},
+      {t: 'ครั้ง NONED', n: 1}, {t: 'มูลค่า NONED', n: 1, d: 2}, {t: 'ราคาขาย NONED', n: 1, d: 2},
+      {t: 'ครั้ง รวม', n: 1}, {t: 'มูลค่า รวม', n: 1, d: 2, bar: 1}, {t: 'ราคาขาย รวม', n: 1, d: 2}];
+    table('t-region', C('เขตสุขภาพ'), ASC(0)); table('t-prov', C('จังหวัด'), DESC(8));
+    const D = t => [{t}, {t: 'vs_all', n: 1}, {t: 'ราคาต่อคอร์ส', n: 1, d: 2}, {t: 'มูลค่า (บาท)', n: 1, d: 2, bar: 1}, {t: 'ราคาขาย', n: 1, d: 2}];
+    table('t-drug', D('ยาสมุนไพร ED'), DESC(3)); table('t-name', D('ยาสมุนไพร NONED'), DESC(3));
+  },
+  render() {
+    const F = ds.facts;
+    const g = group(['all', 'region', 'prov'], c => c[1] !== 0, () => [0, 0, 0, 0, 0, 0],
+      (a, k, c) => { const o = c[1] === 1 ? 0 : 3; a[o] += F.all[k]; a[o + 1] += F.all[k] * c[3]; a[o + 2] += F.pri[k]; });
+    const row = (n, a) => [n, a[0], a[1], a[2], a[3], a[4], a[5], a[0] + a[3], a[1] + a[4], a[2] + a[5]];
+    const tot = row(null, g.all.get(0) || [0, 0, 0, 0, 0, 0]);
+    setRows('t-region', rowsOf(g.region, 'region', row), tot);
+    setRows('t-prov', rowsOf(g.prov, 'prov', row), tot);
+    kpi('k1', `${fmt(tot[8] / 1e6, 2)}<small>ล้านบาท</small>`, `${fmt(tot[8], 2)} บาท`);
+    kpi('k2', `${fmt(tot[2] / 1e6, 2)}<small>ล้านบาท</small>`, `${fmt(pctOf(tot[2], tot[8]), 1)}% ของทั้งหมด · ${fmt(tot[1])} ครั้ง`);
+    kpi('k3', `${fmt(tot[5] / 1e6, 2)}<small>ล้านบาท</small>`, `${fmt(pctOf(tot[5], tot[8]), 1)}% ของทั้งหมด · ${fmt(tot[4])} ครั้ง`);
+    kpi('k4', `${fmt(tot[9] / 1e6, 2)}<small>ล้านบาท</small>`, 'ราคาขายจริงที่บันทึกในระบบ');
+
+    const regs = rowsOf(g.region, 'region', (n, a, key) => key ? {key, r: row(n, a)} : null).sort((a, b) => a.key - b.key);
+    bars('c-region', regs.map(({r}) => ({label: shortRegion(r[0]), segs: [{v: r[2], color: S1}, {v: r[5], color: S2}], text: fmt(r[8] / 1e6, 1),
+      tip: `<b>${r[0]}</b><br>${tipRow('ED', fmt(r[2]) + ' บาท')}<br>${tipRow('NONED', fmt(r[5], 2) + ' บาท')}<br>${tipRow('รวม', fmt(r[8], 2) + ' บาท')}`})),
+      {legend: [['ED (ยาในบัญชียาหลัก)', S1], ['NONED (ยานอกบัญชี)', S2]]});
+
+    const drug = (keep, level) => {
+      const m = group([level], keep, () => [0, 0, 0], (a, k, c) => { a[0] += F.all[k]; a[1] += F.all[k] * c[3]; a[2] += F.pri[k]; })[level];
+      const rows = rowsOf(m, level, (n, a) => a[0] ? [n, a[0], a[1] / a[0], a[1], a[2]] : null);
+      const s = rows.reduce((t, r) => [t[0] + r[1], t[1] + r[3], t[2] + r[4]], [0, 0, 0]);
+      return [rows, [null, s[0], s[0] ? s[1] / s[0] : 0, s[1], s[2]]];
+    };
+    setRows('t-drug', ...drug(c => c[1] === 1, 'drug'));
+    setRows('t-name', ...drug(c => c[1] === 2, 'name'));
+  },
+};
+
+const KINDS = {value: VALUE, valid: VALID, gmp: GMP, edcount: EDCOUNT, noned: NONED};
+
+function render() {
+  ok = Uint8Array.from(ds.hosp, (_, h) => passes(h) ? 1 : 0);
+  KINDS[page.kind].render(page);
+  fillSelects();
+}
+function resetAll() {
+  for (const k in state) state[k] = null;
+  render();
+}
+
+async function route() {
+  const id = PAGES[location.hash.slice(1)] ? location.hash.slice(1) : 'uc69';
+  document.querySelectorAll('#nav a').forEach(a => a.classList.toggle('on', a.dataset.p === id));
+  const p = PAGES[id];
+  overlay('<div class="spin"></div>กำลังโหลดข้อมูล…');
+  let next;
+  try { next = await loadYear(p.year); }
+  catch { overlay(`ไม่พบไฟล์ข้อมูล <code>data-${p.year}.js</code><br>รันคำสั่งในโฟลเดอร์โปรเจกต์<br><code>node scripts/fetch-data.mjs ${p.year}</code><br><code>node scripts/build-data.mjs ${p.year}</code>`); return; }
+  if (next !== ds) { for (const k in state) state[k] = null; ds = next; }   // ดัชนีตัวกรองผูกกับข้อมูลแต่ละปี
+  page = p;
+  tables = {};
+  await new Promise(r => requestAnimationFrame(r));   // ให้ spinner แสดงก่อนคำนวณ
+  KINDS[p.kind].setup(p);
+  $('dataDate').textContent = ds.dataDate;
+  $('builtAt').textContent = new Date(ds.builtAt).toLocaleString('th-TH');
+  render();
+  overlay('');
+}
+window.addEventListener('hashchange', route);
+route();
+</script>
+</body>
+</html>
