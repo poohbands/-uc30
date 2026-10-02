@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
     inputs:
       years:
-        description: 'ปีงบที่ต้องการดึง (คั่นด้วยเว้นวรรค)'
-        default: '2569'
+        description: 'ปีงบที่ต้องการดึง (คั่นด้วยเว้นวรรค, เว้นว่าง = ปีงบปัจจุบันและปีก่อนหน้า)'
+        default: ''
 
 permissions:
   contents: write
@@ -28,10 +28,10 @@ jobs:
           node-version: 22
 
       - name: ดึงข้อมูลจาก MOPH Open Data
-        run: node scripts/fetch-data.mjs ${{ github.event.inputs.years || '2569' }}
+        run: node scripts/fetch-data.mjs ${{ github.event.inputs.years }}
 
       - name: สร้าง data-<ปี>.js
-        run: node scripts/build-data.mjs ${{ github.event.inputs.years || '2569' }}
+        run: node scripts/build-data.mjs ${{ github.event.inputs.years }}
 
       - name: commit และ push ถ้าข้อมูลเปลี่ยน
         run: |

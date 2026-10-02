@@ -67,6 +67,10 @@
   .top .sp{flex:1}
   .chip{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--ink-2);white-space:nowrap}
   .chip .dot{width:8px;height:8px;border-radius:50%;background:var(--good)}
+  .yearsel{appearance:none;height:36px;border-radius:10px;border:1px solid var(--brand);background:var(--brand-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230f766e' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+    color:var(--brand);font-weight:600;padding:0 30px 0 12px;cursor:pointer}
+  .empty-card{grid-column:span 12;padding:56px 24px;text-align:center;color:var(--ink-2)}
+  .empty-card h3{margin:12px 0 6px;font-size:18px;color:var(--ink)}
   .iconbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;cursor:pointer;color:var(--ink-2)}
   .iconbtn:hover{background:var(--hover);color:var(--ink)}
   .menubtn{display:none}
@@ -195,6 +199,7 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
       <div><div class="eyebrow" id="eyebrow"></div><h1 id="title"></h1></div>
       <div class="sp"></div>
+      <select class="yearsel" id="yearSel" aria-label="ปีงบประมาณ"></select>
       <span class="chip"><span class="dot"></span>ข้อมูล ณ <span id="dataDate"></span></span>
       <button class="iconbtn" id="themeBtn" aria-label="สลับธีม" title="สลับธีมสว่าง/มืด">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button>
@@ -206,6 +211,7 @@
   </div>
 </div>
 
+<script src="data-index.js"></script>
 <script>
 const TARGET_TOTAL = 2_000_000_000, TARGET_REGION = 165_000_000, PAGE = 50;
 const $ = id => document.getElementById(id);
@@ -232,17 +238,31 @@ const IC = {
   users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>',
   layers: '<path d="m12 3 9 5-9 5-9-5Z"/><path d="m3 13 9 5 9-5"/>',
 };
-const PAGES = {
-  uc69:    {nav: 'มูลค่ายาสมุนไพร UC 2569', icon: 'coin', year: '2569', kind: 'value', vs: 'uc', target: true, title: 'มูลค่าการใช้ยาสมุนไพร สิทธิ UC ปีงบ 2569'},
-  valid:   {nav: 'ตรวจสอบความถูกต้องของรหัสยา', icon: 'check', year: '2569', kind: 'valid', title: 'ความถูกต้องของรหัสยาสมุนไพร 24 หลัก'},
-  gmp:     {nav: 'ยา ED ที่ผลิตจากโรงงาน GMP', icon: 'shield', year: '2569', kind: 'gmp', title: 'ยาสมุนไพร ED ที่ผลิตจากโรงงาน GMP ที่ใช้ในระบบบริการ'},
-  edcount: {nav: 'ยา ED ที่มีการสั่งจ่าย 2569', icon: 'list', year: '2569', kind: 'edcount', title: 'จำนวนรายการยาสมุนไพร ED ที่มีการสั่งจ่ายในปีงบ 2569'},
-  uc68:    {nav: 'มูลค่ายาสมุนไพร UC 2568', icon: 'hist', year: '2568', kind: 'value', vs: 'uc', target: true, title: 'มูลค่าการใช้ยาสมุนไพร สิทธิ UC ปีงบ 2568'},
-  all69:   {nav: 'มูลค่ายาสมุนไพร ทุกสิทธิ 2569', icon: 'users', year: '2569', kind: 'value', vs: 'all', target: false, title: 'มูลค่าการใช้ยาสมุนไพร ทุกสิทธิ ปีงบ 2569'},
-  noned:   {nav: 'ED + NONED ทุกสิทธิ 2569', icon: 'layers', year: '2569', kind: 'noned', title: 'มูลค่าการใช้ยาสมุนไพร ทุกสิทธิ รวม ED และ NONED ปีงบ 2569'},
+// รายงาน (ใช้ได้กับทุกปีงบ) -> URL: #<รายงาน>/<ปีงบ>
+const REPORTS = {
+  uc:      {nav: 'มูลค่ายาสมุนไพร สิทธิ UC', icon: 'coin', kind: 'value', vs: 'uc', target: true, title: y => `มูลค่าการใช้ยาสมุนไพร สิทธิ UC ปีงบ ${y}`},
+  valid:   {nav: 'ตรวจสอบความถูกต้องของรหัสยา', icon: 'check', kind: 'valid', title: y => `ความถูกต้องของรหัสยาสมุนไพร 24 หลัก ปีงบ ${y}`},
+  gmp:     {nav: 'ยา ED ที่ผลิตจากโรงงาน GMP', icon: 'shield', kind: 'gmp', title: y => `ยาสมุนไพร ED ที่ผลิตจากโรงงาน GMP ปีงบ ${y}`},
+  edcount: {nav: 'ยา ED ที่มีการสั่งจ่าย', icon: 'list', kind: 'edcount', title: y => `จำนวนรายการยาสมุนไพร ED ที่มีการสั่งจ่าย ปีงบ ${y}`},
+  all:     {nav: 'มูลค่ายาสมุนไพร ทุกสิทธิ', icon: 'users', kind: 'value', vs: 'all', target: false, title: y => `มูลค่าการใช้ยาสมุนไพร ทุกสิทธิ ปีงบ ${y}`},
+  noned:   {nav: 'ED + NONED ทุกสิทธิ', icon: 'layers', kind: 'noned', title: y => `มูลค่าการใช้ยาสมุนไพร ทุกสิทธิ รวม ED และ NONED ปีงบ ${y}`},
 };
+// ปีที่มีไฟล์ข้อมูล (จาก data-index.js ที่ build-data.mjs สร้าง) ใหม่สุดก่อน
+const YEARS = window.DATA_INDEX || [{year: '2569', rows: 1, dataDate: ''}, {year: '2568', rows: 1, dataDate: ''}];
+const DEFAULT_YEAR = (YEARS.find(y => y.rows > 0) || YEARS[0]).year;
+const LEGACY = {uc69: 'uc/2569', uc68: 'uc/2568', all69: 'all/2569', valid: 'valid/2569', gmp: 'gmp/2569', edcount: 'edcount/2569', noned: 'noned/2569'};
+function parseHash() {
+  let h = location.hash.slice(1);
+  if (LEGACY[h]) h = LEGACY[h];
+  let [id, y] = h.split('/');
+  if (!REPORTS[id]) id = 'uc';
+  if (!YEARS.some(x => x.year === y)) y = DEFAULT_YEAR;
+  return {id, y};
+}
 const svg = (name, s = 18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[name]}</svg>`;
-$('nav').innerHTML = Object.entries(PAGES).map(([id, p]) => `<a href="#${id}" data-p="${id}">${svg(p.icon)}<span>${p.nav}</span></a>`).join('');
+$('nav').innerHTML = Object.entries(REPORTS).map(([id, r]) => `<a data-p="${id}">${svg(r.icon)}<span>${r.nav}</span></a>`).join('');
+$('yearSel').innerHTML = YEARS.map(y => `<option value="${y.year}">ปีงบ ${y.year}${y.rows ? '' : ' (ยังไม่มีข้อมูล)'}</option>`).join('');
+$('yearSel').onchange = () => { location.hash = `${parseHash().id}/${$('yearSel').value}`; };
 $('nav').onclick = () => document.body.classList.remove('nav-open');
 
 // ---------- ข้อมูล (data-<ปี>.js โหลดเมื่อจำเป็น) ----------
@@ -646,20 +666,29 @@ function resetAll() {
 }
 
 async function route() {
-  const id = PAGES[location.hash.slice(1)] ? location.hash.slice(1) : 'uc69';
-  document.querySelectorAll('#nav a').forEach(a => a.classList.toggle('on', a.dataset.p === id));
-  const p = PAGES[id];
+  const {id, y} = parseHash();
+  const r = REPORTS[id];
+  const p = {...r, id, year: y, title: r.title(y), nav: `${r.nav} ${y}`};
+  document.querySelectorAll('#nav a').forEach(a => { a.href = `#${a.dataset.p}/${y}`; a.classList.toggle('on', a.dataset.p === id); });
+  $('yearSel').value = y;
   overlay('<div class="spin"></div>กำลังโหลดข้อมูล…');
   let next;
-  try { next = await loadYear(p.year); }
-  catch { overlay(`ไม่พบไฟล์ข้อมูล <code>data-${p.year}.js</code><br>รันคำสั่งในโฟลเดอร์โปรเจกต์<br><code>node scripts/fetch-data.mjs ${p.year}</code><br><code>node scripts/build-data.mjs ${p.year}</code>`); return; }
+  try { next = await loadYear(y); }
+  catch { overlay(`ไม่พบไฟล์ข้อมูล <code>data-${y}.js</code><br>รันคำสั่งในโฟลเดอร์โปรเจกต์<br><code>node scripts/fetch-data.mjs ${y}</code><br><code>node scripts/build-data.mjs ${y}</code>`); return; }
   if (next !== ds) { for (const k in state) state[k] = null; ds = next; }   // ดัชนีตัวกรองผูกกับข้อมูลแต่ละปี
   page = p;
   tables = {};
-  await new Promise(r => requestAnimationFrame(r));   // ให้ spinner แสดงก่อนคำนวณ
-  KINDS[p.kind].setup(p);
+  await new Promise(res => requestAnimationFrame(res));   // ให้ spinner แสดงก่อนคำนวณ
   $('dataDate').textContent = ds.dataDate;
   $('builtAt').textContent = new Date(ds.builtAt).toLocaleString('th-TH');
+  if (!ds.facts.h.length) {   // ปีงบใหม่ที่ API ยังไม่มีข้อมูล
+    $('eyebrow').textContent = `ปีงบประมาณ ${y}`; $('title').textContent = p.title;
+    $('content').innerHTML = `<div class="card empty-card">${svg('hist', 40)}<h3>ยังไม่มีข้อมูลปีงบ ${y}</h3>
+      MOPH Open Data ยังไม่มีข้อมูลของปีงบนี้ ระบบจะดึงให้อัตโนมัติทุกวันเวลา 23:00 น. และแสดงทันทีเมื่อมีข้อมูล
+      ${YEARS.find(x => x.rows) ? `<br><br><a href="#${id}/${YEARS.find(x => x.rows).year}">ดูปีงบ ${YEARS.find(x => x.rows).year}</a>` : ''}</div>`;
+    fillSelects(); overlay(''); return;
+  }
+  KINDS[p.kind].setup(p);
   render();
   overlay('');
 }

@@ -68,10 +68,10 @@ for (const year of years) {
     F.uc.push(vsUc); F.all.push(vsAll); F.pri.push(round2(priAll));
   }
 
-  const d = dateCom; // yyyymmddhhmm
+  const d = dateCom; // yyyymmddhhmm (ว่างถ้า API ยังไม่มีข้อมูลปีนี้)
   const data = {
     year,
-    dataDate: `${d.slice(6, 8)}/${d.slice(4, 6)}/${+d.slice(0, 4) + 543} ${d.slice(8, 10)}:${d.slice(10, 12)}`,
+    dataDate: d ? `${d.slice(6, 8)}/${d.slice(4, 6)}/${+d.slice(0, 4) + 543} ${d.slice(8, 10)}:${d.slice(10, 12)}` : '-',
     builtAt: new Date().toISOString(),
     dict: Object.fromEntries(Object.entries(D).map(([k, v]) => [k, v.list])),
     hosp, codes, facts: F,
@@ -86,3 +86,13 @@ for (const year of years) {
   console.log(`[${year}] UC: vs_uc ${ucVs.toLocaleString()} | มูลค่า ${ucVal.toLocaleString()} บาท | ร้อยละ ${(ucVal / 2e7).toFixed(2)}`);
   console.log(`[${year}] เขียน ${path.basename(out)} (${(fs.statSync(out).size / 1e6).toFixed(1)} MB)`);
 }
+
+// สารบัญปีที่มีข้อมูล (data-index.js) ให้ dashboard สร้างตัวเลือกปีงบ
+const index = fs.readdirSync(ROOT).map(f => (f.match(/^data-(\d{4})\.js$/) || [])[1]).filter(Boolean).sort().reverse().map(y => {
+  const txt = fs.readFileSync(path.join(ROOT, `data-${y}.js`), 'utf8');
+  const rows = (txt.match(/"h":\[([^\]]*)\]/) || [, ''])[1];
+  return { year: y, dataDate: (txt.match(/"dataDate":"([^"]*)"/) || [])[1] || '-', rows: rows ? rows.split(',').length : 0 };
+});
+fs.writeFileSync(path.join(ROOT, 'data-index.js'), `window.DATA_INDEX = ${JSON.stringify(index)};
+`);
+console.log('data-index.js', index.map(x => `${x.year}:${x.rows}`).join(' '));

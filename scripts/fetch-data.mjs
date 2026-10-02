@@ -1,10 +1,13 @@
 // ดาวน์โหลด s_ttm4 ดิบจาก MOPH Open Data ครบ 77 จังหวัด เก็บไว้ที่ cache/raw-<ปี>.json
 // แล้วสร้าง data ให้ dashboard ต่อด้วย build-data.mjs
-// ใช้: node scripts/fetch-data.mjs [ปีงบ พ.ศ. ...]   (ค่าเริ่มต้น 2569 2568)
+// ใช้: node scripts/fetch-data.mjs [ปีงบ พ.ศ. ...]   (ค่าเริ่มต้น = ปีงบปัจจุบันและปีงบก่อนหน้า)
 import fs from 'fs';
 import path from 'path';
 
-const YEARS = process.argv.slice(2).length ? process.argv.slice(2) : ['2569', '2568'];
+// ปีงบประมาณไทยเริ่ม 1 ต.ค. -> ต.ค.-ธ.ค. นับเป็นปีงบถัดไป (คิดตามเวลาไทย)
+const now = new Date(Date.now() + 7 * 3600e3);
+const currentFY = now.getUTCFullYear() + 543 + (now.getUTCMonth() >= 9 ? 1 : 0);
+const YEARS = process.argv.slice(2).filter(Boolean).length ? process.argv.slice(2).filter(Boolean) : [String(currentFY), String(currentFY - 1)];
 const API = 'https://opendata.moph.go.th/api/report_data';
 const PAGE = 10000;
 const ROOT = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, '$1')), '..');
