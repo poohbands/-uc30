@@ -45,5 +45,6 @@ jobs:
             echo "ข้อมูลไม่เปลี่ยนแปลง"
           else
             git commit -m "อัปเดตข้อมูล $(TZ=Asia/Bangkok date '+%Y-%m-%d %H:%M')"
+            git pull --rebase   # admin อาจบันทึก config.json ระหว่างที่ดึงข้อมูล
             git push
           fi

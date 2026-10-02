@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>ผู้ดูแลระบบ · Dashboard ยาสมุนไพร</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: light;
+    --page:#f4f5f2; --surface:#ffffff; --surface-2:#f9f9f7; --hover:#f1f1ee;
+    --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+    --grid:#e1e0d9; --border:rgba(11,11,11,.09);
+    --brand:#0f766e; --brand-ink:#ffffff; --brand-soft:#e3f2ef;
+    --s2:#eb6834; --good:#006300; --critical:#d03b3b;
+    --shadow:0 1px 2px rgba(16,24,20,.04), 0 4px 16px rgba(16,24,20,.05);
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])){
+      color-scheme: dark;
+      --page:#0d0d0d; --surface:#1a1a19; --surface-2:#212120; --hover:#262624;
+      --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+      --grid:#2c2c2a; --border:rgba(255,255,255,.09);
+      --brand:#2bb3a3; --brand-ink:#05201d; --brand-soft:#123a35;
+      --s2:#d95926; --good:#0ca30c; --critical:#e66767;
+      --shadow:none;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --page:#0d0d0d; --surface:#1a1a19; --surface-2:#212120; --hover:#262624;
+    --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --border:rgba(255,255,255,.09);
+    --brand:#2bb3a3; --brand-ink:#05201d; --brand-soft:#123a35;
+    --s2:#d95926; --good:#0ca30c; --critical:#e66767;
+    --shadow:none;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--page);color:var(--ink);font-size:14px;line-height:1.5}
+  button,select,input,textarea{font:inherit;color:inherit}
+  a{color:var(--brand)}
+  .wrap{max-width:640px;margin:0 auto;padding:32px 16px 48px}
+  .head{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .head h1{font-size:22px;margin:0;flex:1}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+  .card h2{font-size:15px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:12px;margin:0 0 14px}
+  label.f{display:block;font-size:13px;color:var(--ink-2);margin:10px 0 4px}
+  input[type=text],input[type=password],textarea{width:100%;border:1px solid var(--border);background:var(--surface-2);border-radius:10px;padding:9px 12px}
+  textarea{resize:vertical;min-height:64px}
+  input:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:-1px}
+  .btn{border:0;border-radius:10px;padding:9px 18px;background:var(--brand);color:var(--brand-ink);font-weight:600;cursor:pointer}
+  .btn:disabled{opacity:.5;cursor:default}
+  .btn.ghost{background:none;border:1px solid var(--border);color:var(--ink-2);font-weight:500}
+  .row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--grid)}
+  .row:first-of-type{border-top:0}
+  .row span{flex:1}
+  .sw{position:relative;width:42px;height:24px;flex:none}
+  .sw input{opacity:0;width:0;height:0;position:absolute}
+  .sw i{position:absolute;inset:0;border-radius:999px;background:var(--grid);transition:.15s;cursor:pointer}
+  .sw i::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .sw input:checked + i{background:var(--brand)}
+  .sw input.warn:checked + i{background:var(--s2)}
+  .sw input:checked + i::after{transform:translateX(18px)}
+  .sw input:focus-visible + i{outline:2px solid var(--brand);outline-offset:2px}
+  .msg{font-size:13px;margin-top:12px;min-height:20px}
+  .msg.ok{color:var(--good)} .msg.err{color:var(--critical)}
+  .bar{position:sticky;bottom:0;display:flex;gap:10px;align-items:center;background:var(--page);padding:12px 0}
+  .bar .msg{margin:0;flex:1}
+  .login{max-width:360px;margin:12vh auto 0}
+  details summary{cursor:pointer;color:var(--ink-2);font-size:13px}
+  details ol{padding-left:20px;color:var(--ink-2);font-size:13px}
+  code{background:var(--surface-2);border:1px solid var(--border);padding:0 6px;border-radius:6px;font-size:12px}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <form class="card login" id="loginForm" autocomplete="off">
+    <h2>เข้าสู่ระบบผู้ดูแล</h2>
+    <p class="sub">Dashboard มูลค่าการใช้ยาสมุนไพร สิทธิ UC</p>
+    <label class="f" for="user">ชื่อผู้ใช้</label>
+    <input type="text" id="user" required>
+    <label class="f" for="pass">รหัสผ่าน</label>
+    <input type="password" id="pass" required>
+    <div class="msg err" id="loginMsg"></div>
+    <button class="btn" type="submit">เข้าสู่ระบบ</button>
+  </form>
+
+  <div id="panel" hidden>
+    <div class="head">
+      <h1>ผู้ดูแลระบบ</h1>
+      <a class="btn ghost" href="./" target="_blank">ดู Dashboard</a>
+      <button class="btn ghost" id="logout">ออกจากระบบ</button>
+    </div>
+
+    <div class="card">
+      <h2>GitHub token</h2>
+      <p class="sub">ใช้บันทึกการตั้งค่าลงไฟล์ <code>config.json</code> ใน repo · เก็บไว้ในเบราว์เซอร์นี้เท่านั้น</p>
+      <input type="password" id="token" placeholder="github_pat_…" autocomplete="off">
+      <details>
+        <summary>วิธีสร้าง token</summary>
+        <ol>
+          <li>เปิด <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → Fine-grained tokens → Generate new token</a></li>
+          <li>Repository access: <b>Only select repositories</b> → เลือก <code>REPO</code></li>
+          <li>Permissions → Repository → <b>Contents: Read and write</b></li>
+          <li>กด Generate แล้วคัดลอก token มาวางในช่องด้านบน</li>
+        </ol>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2>โหมดปิดปรับปรุง</h2>
+      <p class="sub">เมื่อเปิด ผู้ใช้ทั่วไปจะเห็นหน้าแจ้งปิดปรับปรุงแทน Dashboard (ผู้ดูแลที่ล็อกอินในเบราว์เซอร์นี้ยังเข้าดูได้)</p>
+      <div class="row"><span>เปิดโหมดปิดปรับปรุง</span><label class="sw"><input type="checkbox" class="warn" id="mt"><i></i></label></div>
+      <label class="f" for="mtMsg">ข้อความที่แสดงให้ผู้ใช้</label>
+      <textarea id="mtMsg"></textarea>
+    </div>
+
+    <div class="card">
+      <h2>เมนูในหน้าแรก</h2>
+      <p class="sub">ปิดแล้วเมนูจะหายจากแถบด้านข้าง และลิงก์ตรงไปหน้านั้นจะถูกพาไปเมนูแรกที่เปิดอยู่</p>
+      <div id="menus"></div>
+    </div>
+
+    <div class="bar">
+      <div class="msg" id="saveMsg"></div>
+      <button class="btn ghost" id="reload">โหลดค่าล่าสุด</button>
+      <button class="btn" id="save">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<script src="reports.js"></script>
+<script>
+const REPO = 'poohbands/-uc30', BRANCH = 'main', FILE = 'config.json';
+// SHA-256 ของ "<ชื่อผู้ใช้>:<รหัสผ่าน>" (ไม่เก็บรหัสผ่านตรงๆ ในหน้าเว็บ) — การแก้ค่าจริงต้องใช้ GitHub token เสมอ
+const CRED_HASH = 'eacc275746012b06275238b320edf12237cf0771ec66c8fc510553d8a955a78d';
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[ch]));
+const safe = (fn, d) => { try { return fn(); } catch { return d; } };
+const local = {get: k => safe(() => localStorage.getItem(k), null), set: (k, v) => safe(() => v ? localStorage.setItem(k, v) : localStorage.removeItem(k))};
+const session = {get: k => safe(() => sessionStorage.getItem(k), null), set: (k, v) => safe(() => v ? sessionStorage.setItem(k, v) : sessionStorage.removeItem(k))};
+if (local.get('theme')) document.documentElement.dataset.theme = local.get('theme');
+document.querySelectorAll('code').forEach(c => { if (c.textContent === 'REPO') c.textContent = REPO; });
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+const b64decode = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g, '')), c => c.charCodeAt(0)));
+const b64encode = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
+
+// ---------- ล็อกอิน ----------
+$('loginForm').onsubmit = async e => {
+  e.preventDefault();
+  if (await sha256(`${$('user').value.trim()}:${$('pass').value}`) !== CRED_HASH) {
+    $('loginMsg').textContent = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'; $('pass').value = ''; return;
+  }
+  session.set('uc30-admin', '1');
+  showPanel();
+};
+$('logout').onclick = () => { session.set('uc30-admin', null); location.reload(); };
+
+// ---------- การตั้งค่า ----------
+let cfg = null, sha = null;
+const api = (method, body) => fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}${method === 'GET' ? `?ref=${BRANCH}` : ''}`, {
+  method, cache: 'no-store',
+  headers: {Authorization: `Bearer ${$('token').value.trim()}`, Accept: 'application/vnd.github+json', ...(body && {'Content-Type': 'application/json'})},
+  body: body && JSON.stringify(body),
+});
+const say = (text, cls = '') => { $('saveMsg').textContent = text; $('saveMsg').className = `msg ${cls}`; };
+
+async function load() {
+  say('กำลังโหลด…');
+  sha = null; cfg = null;
+  try {
+    if ($('token').value.trim()) {   // อ่านจาก GitHub โดยตรงจะได้ค่าล่าสุด (ไฟล์บนเว็บอาจค้าง cache ไม่กี่นาที)
+      const r = await api('GET');
+      if (r.status === 401) throw new Error('token ไม่ถูกต้องหรือหมดอายุ');
+      if (r.ok) { const j = await r.json(); sha = j.sha; cfg = JSON.parse(b64decode(j.content)); }
+      else if (r.status !== 404) throw new Error(`GitHub ตอบกลับ ${r.status}`);
+    }
+    if (!cfg) cfg = await (await fetch(`${FILE}?t=${Date.now()}`, {cache: 'no-store'})).json().catch(() => ({}));
+    say('');
+  } catch (err) { cfg = cfg || {}; say(`โหลดไม่สำเร็จ: ${err.message}`, 'err'); }
+  cfg = {maintenance: false, maintenanceMessage: 'ระบบปิดปรับปรุงชั่วคราว ขออภัยในความไม่สะดวก', hidden: [], ...cfg};
+  if (!Array.isArray(cfg.hidden)) cfg.hidden = [];
+  fill();
+}
+function fill() {
+  $('mt').checked = !!cfg.maintenance;
+  $('mtMsg').value = cfg.maintenanceMessage || '';
+  $('menus').innerHTML = Object.entries(REPORTS).map(([id, r]) =>
+    `<div class="row"><span>${esc(r.nav)}</span><label class="sw"><input type="checkbox" data-m="${id}"${cfg.hidden.includes(id) ? '' : ' checked'}><i></i></label></div>`).join('');
+}
+
+$('save').onclick = async () => {
+  const token = $('token').value.trim();
+  if (!token) { say('ใส่ GitHub token ก่อนบันทึก', 'err'); $('token').focus(); return; }
+  const hidden = [...document.querySelectorAll('[data-m]')].filter(x => !x.checked).map(x => x.dataset.m);
+  if (hidden.length === Object.keys(REPORTS).length && !confirm('ปิดทุกเมนู ผู้ใช้จะไม่เห็นรายงานใดเลย ยืนยันหรือไม่?')) return;
+  const next = {maintenance: $('mt').checked, maintenanceMessage: $('mtMsg').value.trim(), hidden};
+  $('save').disabled = true; say('กำลังบันทึก…');
+  try {
+    if (!sha) { const r = await api('GET'); if (r.ok) sha = (await r.json()).sha; else if (r.status === 401) throw new Error('token ไม่ถูกต้องหรือหมดอายุ'); }
+    const parts = [next.maintenance ? 'เปิดโหมดปิดปรับปรุง' : 'ปิดโหมดปิดปรับปรุง', hidden.length ? `ซ่อน ${hidden.length} เมนู` : 'แสดงทุกเมนู'];
+    const r = await api('PUT', {message: `ตั้งค่า dashboard: ${parts.join(', ')}`, content: b64encode(JSON.stringify(next, null, 2) + '\n'), branch: BRANCH, ...(sha && {sha})});
+    if (r.status === 409 || r.status === 422) throw new Error('มีคนแก้ไฟล์ไปก่อนแล้ว กด "โหลดค่าล่าสุด" แล้วลองใหม่');
+    if (r.status === 401) throw new Error('token ไม่ถูกต้องหรือหมดอายุ');
+    if (r.status === 403 || r.status === 404) throw new Error('token ไม่มีสิทธิ์เขียน repo นี้ (ต้องการ Contents: Read and write)');
+    if (!r.ok) throw new Error(`GitHub ตอบกลับ ${r.status}`);
+    sha = (await r.json()).content.sha; cfg = next;
+    local.set('uc30-gh-token', token);
+    say('บันทึกแล้ว · หน้าเว็บจะอัปเดตภายในประมาณ 1–10 นาที (รอ GitHub Pages)', 'ok');
+  } catch (err) { say(`บันทึกไม่สำเร็จ: ${err.message}`, 'err'); }
+  $('save').disabled = false;
+};
+$('reload').onclick = load;
+$('token').onchange = () => { local.set('uc30-gh-token', $('token').value.trim()); load(); };
+
+function showPanel() {
+  $('loginForm').hidden = true; $('panel').hidden = false;
+  $('token').value = local.get('uc30-gh-token') || '';
+  load();
+}
+if (session.get('uc30-admin') === '1') showPanel(); else $('user').focus();
+</script>
+</body>
+</html>

@@ -175,6 +175,14 @@
   .spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--grid);border-top-color:var(--brand);animation:sp 0.8s linear infinite;margin:0 auto 8px}
   @keyframes sp{to{transform:rotate(360deg)}}
   .foot{color:var(--muted);font-size:12px;margin-top:22px}
+  nav a.off{opacity:.5;text-decoration:line-through}
+  .admin-bar{background:var(--s2);color:#fff;font-size:13px;padding:6px 16px;text-align:center}
+  .admin-bar a{color:#fff;font-weight:600}
+  .mt{min-height:100vh;display:grid;place-items:center;padding:16px}
+  .mt-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:40px 32px;text-align:center;max-width:460px;color:var(--ink-2)}
+  .mt-box svg{color:var(--brand)}
+  .mt-box h1{color:var(--ink);font-size:22px;margin:12px 0 6px}
+  .mt-box p{margin:0;white-space:pre-line}
 
   @media (max-width:1280px){ .filters{grid-template-columns:repeat(4,minmax(0,1fr))} }
   @media (max-width:1100px){ .grid > .card{grid-column:span 12 !important} .grid > .kpi{grid-column:span 6 !important} }
@@ -223,6 +231,7 @@
 </div>
 
 <script src="data-index.js"></script>
+<script src="reports.js"></script>
 <script>
 const TARGET_TOTAL = 2_000_000_000, TARGET_REGION = 165_000_000, PAGE = 50;
 const $ = id => document.getElementById(id);
@@ -248,18 +257,20 @@ const IC = {
   hist: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>',
   users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>',
   alert: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/>',
+  tool: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4Z"/>',
   layers: '<path d="m12 3 9 5-9 5-9-5Z"/><path d="m3 13 9 5 9-5"/>',
 };
-// รายงาน (ใช้ได้กับทุกปีงบ) -> URL: #<รายงาน>/<ปีงบ>
-const REPORTS = {
-  uc:      {nav: 'มูลค่ายาสมุนไพร สิทธิ UC', icon: 'coin', kind: 'value', vs: 'uc', target: true, title: y => `มูลค่าการใช้ยาสมุนไพร สิทธิ UC ปีงบ ${y}`},
-  valid:   {nav: 'ตรวจสอบความถูกต้องของรหัสยา', icon: 'check', kind: 'valid', title: y => `ความถูกต้องของรหัสยาสมุนไพร 24 หลัก ปีงบ ${y}`},
-  invalid: {nav: 'รายการรหัสยาที่ไม่ถูกต้อง', icon: 'alert', kind: 'invalid', title: y => `รายการรหัสยาที่ไม่ถูกต้อง ปีงบ ${y} — ติดตามตามช่วงวันที่`},
-  gmp:     {nav: 'ยา ED ที่ผลิตจากโรงงาน GMP', icon: 'shield', kind: 'gmp', title: y => `ยาสมุนไพร ED ที่ผลิตจากโรงงาน GMP ปีงบ ${y}`},
-  edcount: {nav: 'ยา ED ที่มีการสั่งจ่าย', icon: 'list', kind: 'edcount', title: y => `จำนวนรายการยาสมุนไพร ED ที่มีการสั่งจ่าย ปีงบ ${y}`},
-  all:     {nav: 'มูลค่ายาสมุนไพร ทุกสิทธิ', icon: 'users', kind: 'value', vs: 'all', target: false, title: y => `มูลค่าการใช้ยาสมุนไพร ทุกสิทธิ ปีงบ ${y}`},
-  noned:   {nav: 'ED + NONED ทุกสิทธิ', icon: 'layers', kind: 'noned', title: y => `มูลค่าการใช้ยาสมุนไพร ทุกสิทธิ รวม ED และ NONED ปีงบ ${y}`},
-};
+
+// ---------- ค่าที่ admin ตั้ง (config.json แก้ผ่าน admin.html) ----------
+// admin ที่ล็อกอินในแท็บนี้เห็นทุกเมนูและเข้าได้แม้ปิดปรับปรุง
+const IS_ADMIN = (() => { try { return sessionStorage.getItem('uc30-admin') === '1'; } catch { return false; } })();
+const CFG = {maintenance: false, maintenanceMessage: '', hidden: []};
+const shown = id => IS_ADMIN || !CFG.hidden.includes(id);
+async function loadConfig() {
+  try { Object.assign(CFG, await (await fetch(`config.json?t=${Date.now()}`, {cache: 'no-store'})).json()); } catch {}   // ไม่มีไฟล์ = ใช้ค่าปกติ
+  if (!Array.isArray(CFG.hidden)) CFG.hidden = [];
+}
+
 // ปีที่มีไฟล์ข้อมูล (จาก data-index.js ที่ build-data.mjs สร้าง) ใหม่สุดก่อน
 const YEARS = window.DATA_INDEX || [{year: '2569', rows: 1, dataDate: ''}, {year: '2568', rows: 1, dataDate: ''}];
 const DEFAULT_YEAR = (YEARS.find(y => y.rows > 0) || YEARS[0]).year;
@@ -268,15 +279,18 @@ function parseHash() {
   let h = location.hash.slice(1);
   if (LEGACY[h]) h = LEGACY[h];
   let [id, y] = h.split('/');
-  if (!REPORTS[id]) id = 'uc';
+  if (!REPORTS[id] || !shown(id)) id = Object.keys(REPORTS).find(shown) || 'uc';
   if (!YEARS.some(x => x.year === y)) y = DEFAULT_YEAR;
   return {id, y};
 }
 const svg = (name, s = 18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[name]}</svg>`;
-$('nav').innerHTML = Object.entries(REPORTS).map(([id, r]) => `<a data-p="${id}">${svg(r.icon)}<span>${r.nav}</span></a>`).join('');
-$('yearSel').innerHTML = YEARS.map(y => `<option value="${y.year}">ปีงบ ${y.year}${y.rows ? '' : ' (ยังไม่มีข้อมูล)'}</option>`).join('');
-$('yearSel').onchange = () => { location.hash = `${parseHash().id}/${$('yearSel').value}`; };
-$('nav').onclick = () => document.body.classList.remove('nav-open');
+function buildNav() {
+  $('nav').innerHTML = Object.entries(REPORTS).filter(([id]) => shown(id))
+    .map(([id, r]) => `<a data-p="${id}"${CFG.hidden.includes(id) ? ' class="off" title="ซ่อนจากผู้ใช้ทั่วไป"' : ''}>${svg(r.icon)}<span>${r.nav}</span></a>`).join('');
+  $('yearSel').innerHTML = YEARS.map(y => `<option value="${y.year}">ปีงบ ${y.year}${y.rows ? '' : ' (ยังไม่มีข้อมูล)'}</option>`).join('');
+  $('yearSel').onchange = () => { location.hash = `${parseHash().id}/${$('yearSel').value}`; };
+  $('nav').onclick = () => document.body.classList.remove('nav-open');
+}
 
 // ---------- ข้อมูล (data-<ปี>.js โหลดเมื่อจำเป็น) ----------
 let ds = null, page = null;
@@ -763,6 +777,7 @@ function resetAll() {
 
 async function route() {
   const {id, y} = parseHash();
+  if (location.hash.slice(1) !== `${id}/${y}`) history.replaceState(null, "", `#${id}/${y}`);   // ลิงก์เก่า / เมนูที่ถูกซ่อน
   const r = REPORTS[id];
   const p = {...r, id, year: y, title: r.title(y), nav: `${r.nav} ${y}`};
   document.querySelectorAll('#nav a').forEach(a => { a.href = `#${a.dataset.p}/${y}`; a.classList.toggle('on', a.dataset.p === id); });
@@ -793,8 +808,20 @@ async function route() {
   render();
   overlay('');
 }
-window.addEventListener('hashchange', route);
-route();
+function maintenance() {
+  document.title = 'ปิดปรับปรุงชั่วคราว · Dashboard ยาสมุนไพร';
+  document.body.innerHTML = `<div class="mt"><div class="mt-box">${svg('tool', 44)}<h1>ปิดปรับปรุงชั่วคราว</h1>
+    <p>${esc(CFG.maintenanceMessage || 'ขออภัยในความไม่สะดวก')}</p></div></div>`;
+}
+loadConfig().then(() => {
+  if (CFG.maintenance && !IS_ADMIN) return maintenance();
+  if (IS_ADMIN && (CFG.maintenance || CFG.hidden.length)) document.body.insertAdjacentHTML('afterbegin',
+    `<div class="admin-bar">โหมดผู้ดูแล${CFG.maintenance ? ' · <b>ปิดปรับปรุงอยู่</b> ผู้ใช้ทั่วไปเข้าไม่ได้' : ''}${CFG.hidden.length ? ` · ซ่อน ${CFG.hidden.length} เมนู` : ''} · <a href="admin.html">ไปหน้า admin</a></div>`);
+  if (!Object.keys(REPORTS).some(shown)) { $('content').innerHTML = '<div class="card empty-card"><h3>ยังไม่มีรายงานที่เปิดให้ดู</h3></div>'; return; }
+  buildNav();
+  window.addEventListener('hashchange', route);
+  route();
+});
 </script>
 </body>
 </html>
