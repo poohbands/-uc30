@@ -69,6 +69,17 @@
   .chip .dot{width:8px;height:8px;border-radius:50%;background:var(--good)}
   .yearsel{appearance:none;height:36px;border-radius:10px;border:1px solid var(--brand);background:var(--brand-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230f766e' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
     color:var(--brand);font-weight:600;padding:0 30px 0 12px;cursor:pointer}
+  .range{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+  .range .fl{width:190px}
+  .fl input[type=date]{height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface);padding:0 10px;width:100%}
+  .fl input[type=date]:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+  .presets{display:flex;gap:6px;flex-wrap:wrap}
+  .presets button{height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface);padding:0 12px;cursor:pointer;color:var(--ink-2)}
+  .presets button:hover{background:var(--hover);color:var(--ink)}
+  .note{font-size:12px;color:var(--muted);margin-top:10px}
+  .st{display:inline-block;border-radius:999px;padding:0 9px;font-size:12px;line-height:20px;white-space:nowrap}
+  .st.open{background:color-mix(in srgb,var(--critical) 14%,transparent);color:var(--critical)}
+  .st.fixed{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good)}
   .empty-card{grid-column:span 12;padding:56px 24px;text-align:center;color:var(--ink-2)}
   .empty-card h3{margin:12px 0 6px;font-size:18px;color:var(--ink)}
   .iconbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;cursor:pointer;color:var(--ink-2)}
@@ -236,12 +247,14 @@ const IC = {
   list: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>',
   hist: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>',
   users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>',
+  alert: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/>',
   layers: '<path d="m12 3 9 5-9 5-9-5Z"/><path d="m3 13 9 5 9-5"/>',
 };
 // รายงาน (ใช้ได้กับทุกปีงบ) -> URL: #<รายงาน>/<ปีงบ>
 const REPORTS = {
   uc:      {nav: 'มูลค่ายาสมุนไพร สิทธิ UC', icon: 'coin', kind: 'value', vs: 'uc', target: true, title: y => `มูลค่าการใช้ยาสมุนไพร สิทธิ UC ปีงบ ${y}`},
   valid:   {nav: 'ตรวจสอบความถูกต้องของรหัสยา', icon: 'check', kind: 'valid', title: y => `ความถูกต้องของรหัสยาสมุนไพร 24 หลัก ปีงบ ${y}`},
+  invalid: {nav: 'รายการรหัสยาที่ไม่ถูกต้อง', icon: 'alert', kind: 'invalid', title: y => `รายการรหัสยาที่ไม่ถูกต้อง ปีงบ ${y} — ติดตามตามช่วงวันที่`},
   gmp:     {nav: 'ยา ED ที่ผลิตจากโรงงาน GMP', icon: 'shield', kind: 'gmp', title: y => `ยาสมุนไพร ED ที่ผลิตจากโรงงาน GMP ปีงบ ${y}`},
   edcount: {nav: 'ยา ED ที่มีการสั่งจ่าย', icon: 'list', kind: 'edcount', title: y => `จำนวนรายการยาสมุนไพร ED ที่มีการสั่งจ่าย ปีงบ ${y}`},
   all:     {nav: 'มูลค่ายาสมุนไพร ทุกสิทธิ', icon: 'users', kind: 'value', vs: 'all', target: false, title: y => `มูลค่าการใช้ยาสมุนไพร ทุกสิทธิ ปีงบ ${y}`},
@@ -356,6 +369,9 @@ function group(levels, keep, init, add) {
 const rowsOf = (map, level, fn) => [...map].map(([key, a]) => fn(NAME[level](key), a, key)).filter(Boolean);
 const pctOf = (a, b) => b ? a / b * 100 : 0;
 const mean = xs => xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : 0;
+const TH_M = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+const thDate = d => { if (!d) return '–'; const [y, m, dd] = d.split('-'); return `${+dd} ${TH_M[+m - 1]} ${(+y + 543) % 100}`; };
+const thMonth = d => { const [y, m] = d.split('-'); return `${TH_M[+m - 1]} ${(+y + 543) % 100}`; };
 const shortRegion = n => n.replace('เขตสุขภาพที่ ', 'เขต ');
 
 // =====================================================================
@@ -401,6 +417,8 @@ function table(id, cols, sort, h = 420) {
       if (c.pct) return `<td class="n"><span class="pill">${fmt(v, 2)}<span class="pb"><i style="width:${Math.min(Math.max(v, 0), 100)}%"></i></span></span></td>`;
       if (c.bar) return `<td class="n db"><i style="width:calc(${Math.max(v, 0) / max[j] * 100}% - 20px)"></i><b>${fmt(v, c.d)}</b></td>`;
       if (c.n) return `<td class="n">${fmt(v, c.d)}</td>`;
+      if (c.date) return `<td class="n">${thDate(v)}</td>`;
+      if (c.status) return `<td><span class="st ${v === 'ยังพบ' ? 'open' : 'fixed'}">${v === 'ยังพบ' ? '⚠ ยังพบ' : '✓ หายไปแล้ว'}</span></td>`;
       return `<td class="${c.code ? 'code' : 't'}">${esc(v)}</td>`;
     };
     t.el.innerHTML = `<div class="tw" style="max-height:${h}px"><table><thead><tr><th></th>${cols.map((c, k) =>
@@ -653,7 +671,85 @@ const NONED = {
   },
 };
 
-const KINDS = {value: VALUE, valid: VALID, gmp: GMP, edcount: EDCOUNT, noned: NONED};
+// ---------- รายการรหัสยาที่ไม่ถูกต้อง: ติดตามตามช่วงวันที่ (จาก snapshot รายวัน history-<ปี>.js) ----------
+// items: {"hospcode|didstd": [พบครั้งแรก, พบล่าสุด, vs_all, vs_uc]}  วันที่ = YYYY-MM-DD (ค.ศ.)
+const range = {year: null, mode: 'new', from: null, to: null};
+const INVALID = {
+  setup(p) {
+    const H = window.HISTORY?.[p.year], snaps = H?.snapshots || [];
+    if (range.year !== p.year && snaps.length) {   // ค่าเริ่มต้น: หลังข้อมูลตั้งต้น ถึงวันล่าสุด
+      Object.assign(range, {year: p.year, mode: 'new', from: (snaps[1] || snaps[0]).d, to: snaps.at(-1).d});
+    }
+    layout(p, [{id: 'k1', label: 'พบใหม่ในช่วงที่เลือก'}, {id: 'k2', label: 'หายไป (แก้ไขแล้ว) ในช่วงที่เลือก'}, {id: 'k3', label: 'เปลี่ยนแปลงสุทธิ'}, {id: 'k4', label: 'ยังพบอยู่ ณ วันล่าสุด'}], [
+      {id: 'c-range', chart: true, span: 12, title: 'ช่วงวันที่', sub: 'เลือกช่วงเพื่อดูว่ารหัสยาที่ไม่ถูกต้องเพิ่มขึ้นหรือลดลง'},
+      {id: 'c-trend', chart: true, span: 12, title: 'จำนวนรหัสยาที่ไม่ถูกต้องตามวันที่บันทึกข้อมูล', sub: 'หน่วยบริการ × รหัสยา ที่ไม่พบในฐานรหัสยา 24 หลัก'},
+      {id: 't-items', title: 'รายการรหัสยาที่ไม่ถูกต้อง', span: 12},
+    ]);
+    const first = snaps[0]?.d || '', last = snaps.at(-1)?.d || '';
+    $('c-range').innerHTML = `<div class="range">
+      <label class="fl"><span>มุมมอง</span><select id="r-mode">
+        <option value="new">พบใหม่ในช่วง</option><option value="gone">หายไป (แก้ไขแล้ว) ในช่วง</option><option value="current">ยังพบอยู่ ณ วันล่าสุด</option></select></label>
+      <label class="fl"><span>ตั้งแต่วันที่</span><input type="date" id="r-from" min="${first}" max="${last}"></label>
+      <label class="fl"><span>ถึงวันที่</span><input type="date" id="r-to" min="${first}" max="${last}"></label>
+      <div class="presets" id="r-pre"><button data-d="7">7 วัน</button><button data-d="30">30 วัน</button><button data-d="90">90 วัน</button><button data-d="all">ทั้งปีงบ</button></div></div>
+      <div class="note">ระบบบันทึกข้อมูลทุกวันเวลา 23:00 น. · ข้อมูลก่อนระบบเริ่มทำงานมาจากไฟล์ Excel วันที่ ${snaps.filter(s => s.src === 'excel').map(s => thDate(s.d)).join(', ') || '-'}
+      · รายการที่พบในวันแรก (${thDate(first)}) คือข้อมูลตั้งต้น ไม่ใช่รายการที่เพิ่งเกิด · วันที่ "หายไป" คือวันแรกที่ตรวจแล้วไม่พบรายการนั้น</div>`;
+    $('r-mode').value = range.mode; $('r-from').value = range.from || ''; $('r-to').value = range.to || '';
+    $('r-mode').onchange = () => { range.mode = $('r-mode').value; render(); };
+    $('r-from').onchange = () => { range.from = $('r-from').value || first; render(); };
+    $('r-to').onchange = () => { range.to = $('r-to').value || last; render(); };
+    $('r-pre').onclick = e => {
+      const d = e.target.dataset?.d; if (!d) return;
+      const back = n => new Date(Date.parse(last) - n * 864e5).toISOString().slice(0, 10);
+      Object.assign(range, d === 'all' ? {from: first, to: last} : {from: back(+d) < first ? first : back(+d), to: last});
+      $('r-from').value = range.from; $('r-to').value = range.to; render();
+    };
+    table('t-items', [{t: 'ยาสมุนไพร'}, {t: 'didstd', code: 1}, {t: 'หน่วยบริการ'}, {t: 'hospcode', code: 1}, {t: 'จังหวัด'},
+      {t: 'พบครั้งแรก', date: 1}, {t: 'พบล่าสุด', date: 1}, {t: 'สถานะ', status: 1}, {t: 'vs_all', n: 1}, {t: 'vs_uc', n: 1}], {i: 5, dir: -1}, 560);
+  },
+  render() {
+    const H = window.HISTORY?.[page.year], snaps = H?.snapshots || [];
+    if (!snaps.length) { $('c-trend').innerHTML = '<div class="empty">ยังไม่มีประวัติ — ระบบจะเริ่มบันทึกในการอัปเดตครั้งถัดไป</div>'; setRows('t-items', [], null); return; }
+    const latest = snaps.at(-1).d, from = range.from || snaps[0].d, to = range.to || latest;
+    const dates = snaps.map(s => s.d), next = d => dates.find(x => x > d) || null;
+    ds._hidx ||= new Map(ds.hosp.map((h, i) => [h[0], i]));
+    const anyFilter = Object.values(state).some(v => v !== null);
+    const items = [];
+    for (const [k, it] of Object.entries(H.items)) {
+      const [hc, code] = k.split('|'), i = ds._hidx.get(hc);
+      if (i === undefined ? anyFilter : !ok[i]) continue;
+      items.push({hc, code, first: it[0], last: it[1], gone: it[1] < latest ? next(it[1]) : null, all: it[2], uc: it[3]});
+    }
+    const inR = d => d && d >= from && d <= to;
+    const nNew = items.filter(x => inR(x.first)).length, nGone = items.filter(x => inR(x.gone)).length, nCur = items.filter(x => x.last === latest).length;
+    const net = nNew - nGone;
+    kpi('k1', fmt(nNew), `${thDate(from)} – ${thDate(to)}`);
+    kpi('k2', fmt(nGone), `${thDate(from)} – ${thDate(to)}`);
+    kpi('k3', `${net > 0 ? '+' : ''}${fmt(net)}`, net > 0 ? '▲ รหัสที่ไม่ถูกต้องเพิ่มขึ้น' : net < 0 ? '▼ รหัสที่ไม่ถูกต้องลดลง' : 'ไม่เปลี่ยนแปลง');
+    kpi('k4', fmt(nCur), `ณ ${thDate(latest)}`);
+
+    // แนวโน้ม: จำนวนที่พบ ณ แต่ละ snapshot ในช่วง (ถ้ามากกว่า 40 จุด รวมเป็นรายเดือน ใช้ snapshot สุดท้ายของเดือน)
+    let pts = snaps.filter(s => range.mode === 'current' || (s.d >= from && s.d <= to)).map(s => ({
+      d: s.d, src: s.src, label: thDate(s.d),
+      present: items.filter(x => x.first <= s.d && x.last >= s.d).length,
+      added: items.filter(x => x.first === s.d).length, gone: items.filter(x => x.gone === s.d).length}));
+    if (pts.length > 40) {
+      const m = new Map();
+      for (const x of pts) { const k = x.d.slice(0, 7), a = m.get(k); m.set(k, a ? {...x, label: thMonth(x.d), added: a.added + x.added, gone: a.gone + x.gone} : {...x, label: thMonth(x.d)}); }
+      pts = [...m.values()];
+    }
+    bars('c-trend', pts.map(x => ({label: x.label, segs: [{v: x.present, color: S1}], text: fmt(x.present),
+      tip: `<b>${x.label}</b>${x.src === 'excel' ? ' (จากไฟล์ Excel)' : ''}<br>${tipRow('รหัสที่ไม่ถูกต้อง', fmt(x.present))}<br>${tipRow('พบใหม่', '+' + fmt(x.added))}<br>${tipRow('หายไป', '−' + fmt(x.gone))}`})), {lw: 110});
+
+    const pick = range.mode === 'new' ? x => inR(x.first) : range.mode === 'gone' ? x => inR(x.gone) : x => x.last === latest;
+    setRows('t-items', items.filter(pick).map(x => [H.names[x.code.slice(0, 11)] || 'ไม่พบชื่อยา', x.code, H.hosp[x.hc]?.[0] || x.hc, x.hc, H.hosp[x.hc]?.[1] || '',
+      x.first, x.last, x.last === latest ? 'ยังพบ' : 'หายไปแล้ว', x.all, x.uc]), null);
+    tables['t-items'].el.closest('.card').querySelector('h3').firstChild.textContent =
+      range.mode === 'new' ? 'รายการที่พบใหม่ในช่วงที่เลือก' : range.mode === 'gone' ? 'รายการที่หายไป (แก้ไขแล้ว) ในช่วงที่เลือก' : 'รายการที่ยังพบอยู่ ณ วันล่าสุด';
+  },
+};
+
+const KINDS = {invalid: INVALID, value: VALUE, valid: VALID, gmp: GMP, edcount: EDCOUNT, noned: NONED};
 
 function render() {
   ok = Uint8Array.from(ds.hosp, (_, h) => passes(h) ? 1 : 0);
@@ -673,7 +769,12 @@ async function route() {
   $('yearSel').value = y;
   overlay('<div class="spin"></div>กำลังโหลดข้อมูล…');
   let next;
-  try { next = await loadYear(y); }
+  try {
+    next = await loadYear(y);
+    if (r.kind === 'invalid' && !window.HISTORY?.[y]) await new Promise(res => {   // ไม่มีไฟล์ประวัติ = ยังไม่เริ่มบันทึก
+      const sc = document.createElement('script'); sc.src = `history-${y}.js`; sc.onload = sc.onerror = res; document.head.appendChild(sc);
+    });
+  }
   catch { overlay(`ไม่พบไฟล์ข้อมูล <code>data-${y}.js</code><br>รันคำสั่งในโฟลเดอร์โปรเจกต์<br><code>node scripts/fetch-data.mjs ${y}</code><br><code>node scripts/build-data.mjs ${y}</code>`); return; }
   if (next !== ds) { for (const k in state) state[k] = null; ds = next; }   // ดัชนีตัวกรองผูกกับข้อมูลแต่ละปี
   page = p;
