@@ -1,0 +1,46 @@
+name: อัปเดตข้อมูล dashboard
+
+on:
+  schedule:
+    - cron: '0 16 * * *'   # 23:00 น. เวลาประเทศไทย (UTC+7)
+  workflow_dispatch:
+    inputs:
+      years:
+        description: 'ปีงบที่ต้องการดึง (คั่นด้วยเว้นวรรค)'
+        default: '2569'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: ดึงข้อมูลจาก MOPH Open Data
+        run: node scripts/fetch-data.mjs ${{ github.event.inputs.years || '2569' }}
+
+      - name: สร้าง data-<ปี>.js
+        run: node scripts/build-data.mjs ${{ github.event.inputs.years || '2569' }}
+
+      - name: commit และ push ถ้าข้อมูลเปลี่ยน
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data-*.js
+          if git diff --cached --quiet; then
+            echo "ข้อมูลไม่เปลี่ยนแปลง"
+          else
+            git commit -m "อัปเดตข้อมูล $(TZ=Asia/Bangkok date '+%Y-%m-%d %H:%M')"
+            git push
+          fi
