@@ -1,5 +1,7 @@
 {
   "maintenance": false,
   "maintenanceMessage": "ระบบปิดปรับปรุงชั่วคราว ขออภัยในความไม่สะดวก",
-  "hidden": []
+  "hidden": [
+    "invalid"
+  ]
 }
