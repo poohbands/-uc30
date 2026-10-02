@@ -79,6 +79,25 @@
   .presets button{height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface);padding:0 12px;cursor:pointer;color:var(--ink-2)}
   .presets button:hover{background:var(--hover);color:var(--ink)}
   .note{font-size:12px;color:var(--muted);margin-top:10px}
+  .hos-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-bottom:14px}
+  .hos-h b{font-size:15px}
+  .hos-h .hc{color:var(--muted);font-size:12px}
+  .hos-h .note{margin:0;flex-basis:100%}
+  .trend{font-size:12px;font-weight:600;padding:2px 10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border)}
+  .trend.up{color:var(--critical)} .trend.down{color:var(--good)} .trend.flat{color:var(--ink-2)}
+  .tl{overflow-x:auto;margin-top:18px;max-height:420px;overflow-y:auto;border-top:1px solid var(--grid)}
+  .tl table{border-collapse:separate;border-spacing:3px;font-size:12px}
+  .tl th,.tl td{border-bottom:0;cursor:default}
+  .tl th{font-weight:500;color:var(--muted);text-align:left;position:sticky;top:0;background:var(--surface);z-index:1}
+  .tl th.d{min-width:58px;padding:6px 2px;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .tl td.n,.tl th.n{position:sticky;left:0;background:var(--surface);min-width:200px;max-width:280px;padding-right:10px;vertical-align:middle}
+  .tl th.n{z-index:2;vertical-align:bottom}
+  .tl td.n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+  .tl td.n small{display:block;color:var(--muted);font-size:11px}
+  .tl td.c{padding:0;text-align:center}
+  .tl td.c i{display:inline-block;width:100%;max-width:58px;height:18px;border-radius:4px;background:var(--grid);vertical-align:middle}
+  .tl td.c i.p{background:var(--s1)} .tl td.c i.w{background:var(--s2)}
+  .tl-lg{margin:10px 0 0}
   .st{display:inline-block;border-radius:999px;padding:0 9px;font-size:12px;line-height:20px;white-space:nowrap}
   .st.open{background:color-mix(in srgb,var(--critical) 14%,transparent);color:var(--critical)}
   .st.fixed{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good)}
@@ -700,6 +719,7 @@ const INVALID = {
     layout(p, [{id: 'k1', label: 'พบใหม่ในช่วงที่เลือก'}, {id: 'k2', label: 'หายไป (แก้ไขแล้ว) ในช่วงที่เลือก'}, {id: 'k3', label: 'เปลี่ยนแปลงสุทธิ'}, {id: 'k4', label: 'ยังพบอยู่ ณ วันล่าสุด'}], [
       {id: 'c-range', chart: true, span: 12, title: 'ช่วงวันที่', sub: 'เลือกช่วงเพื่อดูว่ารหัสยาที่ไม่ถูกต้องเพิ่มขึ้นหรือลดลง'},
       {id: 'c-trend', chart: true, span: 12, title: 'จำนวนรหัสยาที่ไม่ถูกต้องตามวันที่บันทึกข้อมูล', sub: 'หน่วยบริการ × รหัสยา ที่ไม่พบในฐานรหัสยา 24 หลัก'},
+      {id: 'c-hos', chart: true, span: 12, title: 'แนวโน้มรายตัวยาของหน่วยบริการ', sub: 'จำนวนรหัสยาที่ไม่ถูกต้องของหน่วยบริการที่เลือก เรียงตามวันที่ และตัวยาที่พบในแต่ละวัน'},
       {id: 't-items', title: 'รายการรหัสยาที่ไม่ถูกต้อง', span: 12},
     ]);
     const first = snaps[0]?.d || '', last = snaps.at(-1)?.d || '';
@@ -758,11 +778,54 @@ const INVALID = {
     bars('c-trend', pts.map(x => ({label: x.label, segs: [{v: x.present, color: S1}], text: fmt(x.present),
       tip: `<b>${x.label}</b>${x.src === 'excel' ? ' (จากไฟล์ Excel)' : ''}<br>${tipRow('รหัสที่ไม่ถูกต้อง', fmt(x.present))}<br>${tipRow('พบใหม่', '+' + fmt(x.added))}<br>${tipRow('หายไป', '−' + fmt(x.gone))}`})), {lw: 110});
 
+    this.hospital(items, snaps, from, to);
+
     const pick = range.mode === 'new' ? x => inR(x.first) : range.mode === 'gone' ? x => inR(x.gone) : x => x.last === latest;
     setRows('t-items', items.filter(pick).map(x => [H.names[x.code.slice(0, 11)] || 'ไม่พบชื่อยา', x.code, H.hosp[x.hc]?.[0] || x.hc, x.hc, H.hosp[x.hc]?.[1] || '',
       x.first, x.last, x.last === latest ? 'ยังพบ' : 'หายไปแล้ว', x.all, x.uc]), null);
     tables['t-items'].el.closest('.card').querySelector('h3').firstChild.textContent =
       range.mode === 'new' ? 'รายการที่พบใหม่ในช่วงที่เลือก' : range.mode === 'gone' ? 'รายการที่หายไป (แก้ไขแล้ว) ในช่วงที่เลือก' : 'รายการที่ยังพบอยู่ ณ วันล่าสุด';
+  },
+  // แนวโน้มของหน่วยบริการเดียว: กราฟแท่งตามวันที่ (พบต่อเนื่อง / พบใหม่) + ตารางตัวยา × วันที่
+  hospital(items, snaps, from, to) {
+    const el = $('c-hos');
+    if (state.hos === null) { el.innerHTML = '<div class="empty">เลือก <b>หน่วยบริการ</b> ในตัวกรองด้านบน เพื่อดูแนวโน้มรายตัวยาของหน่วยบริการนั้น</div>'; return; }
+    const H = window.HISTORY[page.year];
+    // จุดเวลา: snapshot ในช่วงที่เลือก ถ้าเกิน 40 จุด ใช้ snapshot สุดท้ายของแต่ละเดือน
+    let pts = snaps.filter(s => range.mode === 'current' || (s.d >= from && s.d <= to)).map(s => ({d: s.d, label: thDate(s.d)}));
+    if (pts.length > 40) pts = [...new Map(pts.map(x => [x.d.slice(0, 7), {d: x.d, label: thMonth(x.d)}])).values()];
+    const name = x => H.names[x.code.slice(0, 11)] || 'ไม่พบชื่อยา';
+    const at = (x, j) => {   // 0 = ไม่พบ, 1 = พบต่อเนื่อง, 2 = พบใหม่ (ตั้งแต่จุดก่อนหน้า; จุดแรกของปีงบเป็นข้อมูลตั้งต้น)
+      const d = pts[j].d;
+      if (!(x.first <= d && x.last >= d)) return 0;
+      return (j ? x.first > pts[j - 1].d : x.first === d && d !== snaps[0].d) ? 2 : 1;
+    };
+    const rows = items.filter(x => pts.some((_, j) => at(x, j)))
+      .map(x => ({x, cells: pts.map((_, j) => at(x, j))}))
+      .sort((a, b) => (b.cells.at(-1) > 0) - (a.cells.at(-1) > 0) || a.x.first.localeCompare(b.x.first) || name(a.x).localeCompare(name(b.x), 'th'));
+    const cnt = pts.map((_, j) => ({p: rows.filter(r => r.cells[j]).length, n: rows.filter(r => r.cells[j] === 2).length,
+      gone: j ? rows.filter(r => r.cells[j - 1] && !r.cells[j]).map(r => name(r.x)) : []}));
+    const hname = ds.hosp[state.hos][1];
+    if (!pts.length || !rows.length) { el.innerHTML = `<div class="empty">ไม่พบรหัสยาที่ไม่ถูกต้องของ ${esc(hname)} ในช่วงที่เลือก</div>`; return; }
+
+    const diff = cnt.at(-1).p - cnt[0].p;
+    const verdict = pts.length < 2 ? ['flat', 'ข้อมูลยังไม่พอดูแนวโน้ม (มีวันที่บันทึกเพียงวันเดียวในช่วงนี้)']
+      : diff > 0 ? ['up', `▲ เพิ่มขึ้น ${fmt(diff)} รายการ`] : diff < 0 ? ['down', `▼ ลดลง ${fmt(-diff)} รายการ`] : ['flat', '■ คงที่'];
+    const list = (t, xs) => xs.length ? `<br>${t}: ${xs.slice(0, 8).map(esc).join(', ')}${xs.length > 8 ? ` และอีก ${xs.length - 8} รายการ` : ''}` : '';
+    el.innerHTML = `<div class="hos-h"><b>${esc(hname)}</b> <span class="hc">${esc(ds.hosp[state.hos][0])}</span>
+        <span class="trend ${verdict[0]}">${verdict[1]}</span>
+        <span class="note">${pts.length > 1 ? `${pts[0].label} → ${pts.at(-1).label}: ${fmt(cnt[0].p)} → ${fmt(cnt.at(-1).p)} รายการ` : ''}</span></div>
+      <div id="c-hos-bars"></div>
+      <div class="tl"><table><thead><tr><th class="n">ตัวยา (${fmt(rows.length)} รายการ)</th>${pts.map(p => `<th class="d">${p.label}</th>`).join('')}</tr></thead><tbody>
+      ${rows.map(r => `<tr><td class="n" title="${esc(r.x.code)}">${esc(name(r.x))}<small>${esc(r.x.code)}</small></td>${r.cells.map((c, j) =>
+        `<td class="c"><i class="${['', 'p', 'w'][c]}" data-tip="${esc(`<b>${esc(name(r.x))}</b><br>${pts[j].label}: ${['ไม่พบ', 'พบ (ต่อเนื่อง)', 'พบใหม่'][c]}`)}"></i></td>`).join('')}</tr>`).join('')}
+      </tbody></table></div>
+      <div class="legend tl-lg"><span><i style="background:var(--s1)"></i>พบ (ต่อเนื่อง)</span><span><i style="background:var(--s2)"></i>พบใหม่</span><span><i style="background:var(--grid)"></i>ไม่พบ</span></div>`;
+    bars('c-hos-bars', pts.map((p, j) => ({label: p.label, text: fmt(cnt[j].p),
+      segs: [{v: cnt[j].p - cnt[j].n, color: S1}, {v: cnt[j].n, color: S2}],
+      tip: `<b>${p.label}</b><br>${tipRow('รหัสที่ไม่ถูกต้อง', fmt(cnt[j].p))}<br>${tipRow('พบใหม่', '+' + fmt(cnt[j].n))}<br>${tipRow('หายไป', '−' + fmt(cnt[j].gone.length))}`
+        + list('พบใหม่', rows.filter(r => r.cells[j] === 2).map(r => name(r.x))) + list('หายไป', cnt[j].gone)})),
+      {lw: 110, legend: [['พบ (ต่อเนื่อง)', S1], ['พบใหม่', S2]]});
   },
 };
 
