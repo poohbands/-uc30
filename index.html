@@ -59,6 +59,8 @@
   nav a.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
   nav a.on svg{opacity:1}
   .side .src{margin-top:auto;font-size:12px;color:var(--muted);padding:12px 10px 0;border-top:1px solid var(--border)}
+  .side .gear{align-self:flex-start;display:grid;place-items:center;width:28px;height:28px;margin:8px 0 0 4px;border-radius:8px;color:var(--muted);opacity:.6}
+  .side .gear:hover,.side .gear:focus-visible{opacity:1;color:var(--ink);background:var(--hover)}
 
   .main{min-width:0;padding:24px 28px 40px}
   .top{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
@@ -210,6 +212,7 @@
     <div class="nav-h">รายงาน</div>
     <nav id="nav"></nav>
     <div class="src">ที่มา: MOPH Open Data (s_ttm4)<br>ตารางรหัสยา/หน่วยบริการ: 106 รายการ-KPI มูลค่ายา</div>
+    <a class="gear" href="admin.html" title="ผู้ดูแลระบบ" aria-label="ผู้ดูแลระบบ"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></a>
   </aside>
 
   <div class="main">
