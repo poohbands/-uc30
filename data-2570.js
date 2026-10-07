@@ -1,1 +1,1 @@
-(window.DATASETS = window.DATASETS || {})['2570'] = {"year":"2570","dataDate":"-","builtAt":"2026-10-06T20:53:34.333Z","dict":{"type":[],"sangkat":[],"province":[],"amphoe":[],"tambon":[],"drug":[],"name":[],"mfr":[]},"hosp":[],"codes":[],"facts":{"h":[],"c":[],"uc":[],"all":[],"pri":[]}};
+(window.DATASETS = window.DATASETS || {})['2570'] = {"year":"2570","dataDate":"-","builtAt":"2026-10-07T21:07:08.520Z","dict":{"type":[],"sangkat":[],"province":[],"amphoe":[],"tambon":[],"drug":[],"name":[],"mfr":[]},"hosp":[],"codes":[],"facts":{"h":[],"c":[],"uc":[],"all":[],"pri":[]}};
