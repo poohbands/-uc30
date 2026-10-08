@@ -48,10 +48,18 @@
   /* ---------- shell ---------- */
   .app{display:grid;grid-template-columns:272px 1fr;min-height:100vh}
   .side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--border);padding:20px 14px}
-  .brand{display:flex;gap:12px;align-items:center;padding:4px 8px 20px}
-  .brand .mark{width:40px;height:40px;border-radius:12px;background:var(--brand);display:grid;place-items:center;flex:none}
-  .brand b{display:block;font-size:15px;line-height:1.3}
-  .brand small{color:var(--muted);font-size:12px}
+  .brand{padding:0 2px 14px}
+  .logo{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:9px;align-items:center;text-align:center;padding:16px 12px 14px;border-radius:16px;color:#fff;
+    background:radial-gradient(120% 140% at 100% 0,#1f9a83 0,transparent 55%),linear-gradient(140deg,#0f766e,#0a4d48);box-shadow:0 6px 18px -8px rgba(10,77,72,.55)}
+  .logo::after{content:"";position:absolute;right:-18px;bottom:-22px;width:92px;height:92px;opacity:.12;pointer-events:none;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23fff'%3E%3Cpath d='M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z'/%3E%3C/svg%3E") no-repeat center/contain}
+  .logo .emblem{width:58px;height:58px;flex:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.18))}
+  .logo .org{position:relative;z-index:1;min-width:0}
+  .logo b{display:block;font-size:14.5px;line-height:1.35;font-weight:700;letter-spacing:.01em}
+  .logo small{display:block;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.28);font-size:11px;line-height:1.35;color:#d7f0ea}
+  .app-name{display:flex;align-items:center;gap:8px;margin:12px 8px 0;font-size:12.5px;font-weight:600;color:var(--ink-2)}
+  .app-name i{width:6px;height:6px;border-radius:50%;background:#c9a227;box-shadow:0 0 0 3px color-mix(in srgb,#c9a227 22%,transparent);flex:none}
+  .app-name small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
   .nav-h{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--muted);padding:12px 10px 6px;text-transform:uppercase}
   nav a{display:flex;gap:10px;align-items:center;padding:9px 10px;border-radius:10px;color:var(--ink-2);text-decoration:none;font-size:14px;margin-bottom:2px}
   nav a svg{flex:none;opacity:.8}
@@ -98,6 +106,16 @@
   .tl td.c i{display:inline-block;width:100%;max-width:58px;height:18px;border-radius:4px;background:var(--grid);vertical-align:middle}
   .tl td.c i.p{background:var(--s1)} .tl td.c i.w{background:var(--s2)}
   .tl-lg{margin:10px 0 0}
+  .inc{display:flex;flex-direction:column;gap:8px;max-height:560px;overflow-y:auto}
+  .inc details{border:1px solid var(--border);border-radius:8px}
+  .inc summary{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:8px 12px;cursor:pointer;font-size:13px}
+  .inc summary b{font-size:14px}
+  .inc table{width:100%;border-collapse:collapse;font-size:12px}
+  .inc th{font-weight:500;color:var(--muted);text-align:left;padding:6px 12px;border-top:1px solid var(--grid)}
+  .inc td{padding:6px 12px;border-top:1px solid var(--grid);vertical-align:top}
+  .inc td small{display:block;color:var(--muted);font-size:11px}
+  .inc .hl{display:flex;flex-wrap:wrap;gap:4px}
+  .inc .hl span{background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:1px 8px;white-space:nowrap}
   .st{display:inline-block;border-radius:999px;padding:0 9px;font-size:12px;line-height:20px;white-space:nowrap}
   .st.open{background:color-mix(in srgb,var(--critical) 14%,transparent);color:var(--critical)}
   .st.fixed{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good)}
@@ -152,6 +170,13 @@
   .br .sg + .sg{border-radius:0 4px 4px 0}
   .br .sg:not(:last-child){border-radius:0}
   .br .vl{font-size:13px;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .cols{display:flex;align-items:stretch;gap:4px;height:260px;overflow-x:auto;padding-bottom:2px}
+  .cl{flex:1 1 0;min-width:36px;max-width:72px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:2px;border-radius:6px;cursor:default}
+  .cl:hover{background:var(--hover)}
+  .cl .tr{flex:1;width:70%;display:flex;align-items:flex-end}
+  .cl .sg{width:100%;border-radius:4px 4px 0 0;min-height:2px}
+  .cl .vl{font-size:12px;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .cl .lb{font-size:11px;color:var(--ink-2);white-space:nowrap}
   .tline{position:absolute;top:-4px;bottom:-4px;border-left:1.5px dashed var(--ink-2);pointer-events:none}
   .tline span{position:absolute;top:-18px;left:4px;font-size:11px;color:var(--ink-2);white-space:nowrap}
   .legend{display:flex;gap:16px;font-size:12px;color:var(--ink-2);margin:0 0 10px}
@@ -225,8 +250,22 @@
 <div class="app">
   <aside class="side">
     <div class="brand">
-      <div class="mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></div>
-      <div><b>ยาสมุนไพร สิทธิ UC</b><small>ตัวชี้วัดมูลค่าการใช้ยาสมุนไพร</small></div>
+      <div class="logo">
+        <svg class="emblem" viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="24" fill="#f6fbf9"/>
+          <circle cx="24" cy="24" r="21.2" fill="none" stroke="#c9a227" stroke-width="1.1" stroke-dasharray="2 2.2"/>
+          <path d="M24 27.5c-6-4.6-6.4-12.6 0-18.5 6.4 5.9 6 13.9 0 18.5Z" fill="#1f8f5f"/>
+          <path d="M24 26.5V12.5" stroke="#d9f2e4" stroke-width=".9" stroke-linecap="round"/>
+          <path d="M22.6 27.6c-6.3.4-10.6-3.4-11.2-9.6 5.9-.8 10.3 3.2 11.2 9.6Z" fill="#43b07a"/>
+          <path d="M25.4 27.6c6.3.4 10.6-3.4 11.2-9.6-5.9-.8-10.3 3.2-11.2 9.6Z" fill="#43b07a"/>
+          <path d="M10.5 27h27c0 6.6-6 11.4-13.5 11.4S10.5 33.6 10.5 27Z" fill="#0f766e"/>
+          <path d="M10.5 27h27" stroke="#c9a227" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M18.5 38h11l-1.4 2.6h-8.2Z" fill="#0a4d48"/>
+          <path d="M15.5 31.2c1.6 2.4 4.6 4 8.5 4" stroke="#5fbfae" stroke-width="1" stroke-linecap="round" fill="none"/>
+        </svg>
+        <div class="org"><b>กลุ่มงานการแพทย์แผนไทย<br>และสมุนไพร</b><small>สำนักงานสาธารณสุขจังหวัดพิษณุโลก</small></div>
+      </div>
+      <div class="app-name"><i></i><div>Dashboard ยาสมุนไพร สิทธิ UC<small>ตัวชี้วัดมูลค่าการใช้ยาสมุนไพร</small></div></div>
     </div>
     <div class="nav-h">รายงาน</div>
     <nav id="nav"></nav>
@@ -352,24 +391,32 @@ const FILTERS = {
 };
 const state = Object.fromEntries(Object.keys(FILTERS).map(k => [k, null]));
 const val = (h, k) => FILTERS[k].byIndex ? h : ds.hosp[h][FILTERS[k].col];
-const passes = (h, except) => Object.keys(FILTERS).every(k => k === except || state[k] === null || val(h, k) === state[k]);
+const passes = (h, except = []) => Object.keys(FILTERS).every(k => except.includes(k) || state[k] === null || val(h, k) === state[k]);
+// ตัวกรองที่อยู่ระดับย่อยกว่า: ไม่ใช้จำกัดตัวเลือกของระดับบน และถูกล้างอัตโนมัติถ้าไม่สอดคล้องกับค่าใหม่
+const SUB = {sangkat: ['hos'], type: ['hos'], region: ['prov', 'amp', 'tam', 'hos'], prov: ['amp', 'tam', 'hos'], amp: ['tam', 'hos'], tam: ['hos'], hos: []};
 let ok = new Uint8Array(0);
 
 $('filters').innerHTML = Object.entries(FILTERS).map(([k, F]) => `<label class="fl" data-f="${k}"><span>${F.label}</span><select></select></label>`).join('')
   + `<button class="clear" id="clearBtn" onclick="resetAll()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>ล้างตัวกรอง <b id="fcount" hidden></b></button>`;
 
-// ตัวเลือกของแต่ละตัวกรอง = ค่าที่ยังเหลือเมื่อใช้ตัวกรองอื่นทั้งหมด (แบบ Looker)
+// ตัวเลือกของแต่ละตัวกรอง = ค่าที่ยังเหลือเมื่อใช้ตัวกรองอื่น ยกเว้นตัวกรองระดับย่อยกว่า (เปลี่ยนค่าได้ทันทีโดยไม่ต้องล้างตัวกรอง)
 function fillSelects() {
   document.querySelectorAll('#filters .fl').forEach(fl => {
     const k = fl.dataset.f, F = FILTERS[k], sel = fl.querySelector('select');
-    const opts = new Map();
-    for (let h = 0; h < ds.hosp.length; h++) if (passes(h, k)) { const v = val(h, k); if (!opts.has(v)) opts.set(v, F.name(v)); }
+    const opts = new Map(), skip = [k, ...SUB[k]];
+    for (let h = 0; h < ds.hosp.length; h++) if (passes(h, skip)) { const v = val(h, k); if (!opts.has(v)) opts.set(v, F.name(v)); }
     const sorted = [...opts].sort((a, b) => k === 'region' ? a[0] - b[0] : a[1].localeCompare(b[1], 'th'));
     sel.innerHTML = `<option value="">ทั้งหมด (${fmt(sorted.length)})</option>` + sorted.map(([v, n]) =>
       `<option value="${v}" ${state[k] === v ? 'selected' : ''}>${esc(n)}</option>`).join('');
     fl.classList.toggle('on', state[k] !== null);
     sel.title = state[k] === null ? F.label : F.name(state[k]);
-    sel.onchange = () => { state[k] = sel.value === '' ? null : +sel.value; render(); };
+    sel.onchange = () => {
+      state[k] = sel.value === '' ? null : +sel.value;
+      for (const j of SUB[k]) {   // ล้างตัวกรองระดับย่อยที่ไม่มีหน่วยบริการตรงกับค่าใหม่
+        if (state[j] !== null && !ds.hosp.some((_, h) => passes(h, SUB[j]))) state[j] = null;
+      }
+      render();
+    };
   });
   const n = Object.values(state).filter(v => v !== null).length;
   $('clearBtn').disabled = !n; $('fcount').hidden = !n; $('fcount').textContent = n;
@@ -495,6 +542,15 @@ function bars(id, items, {max, target, legend, lw} = {}) {
     $(id).querySelector('.bars').style.marginTop = '18px';
   }
   if (!items.length) $(id).innerHTML = '<div class="empty">ไม่พบข้อมูล</div>';
+}
+// ---------- กราฟแท่งแนวตั้ง ----------
+// items: [{label, v, color, text, tip}]
+function cols(id, items) {
+  if (!items.length) { $(id).innerHTML = '<div class="empty">ไม่พบข้อมูล</div>'; return; }
+  const m = Math.max(...items.map(it => it.v), 1);
+  $(id).innerHTML = `<div class="cols">${items.map(it => `<div class="cl" data-tip="${esc(it.tip)}">
+      <span class="vl">${it.text}</span><span class="tr"><span class="sg" style="height:${it.v / m * 100}%;background:${it.color}"></span></span>
+      <span class="lb">${esc(it.label)}</span></div>`).join('')}</div>`;
 }
 const S1 = 'var(--s1)', S2 = 'var(--s2)';
 const tipRow = (k, v) => `${k}: <b>${v}</b>`;
@@ -719,6 +775,7 @@ const INVALID = {
     layout(p, [{id: 'k1', label: 'พบใหม่ในช่วงที่เลือก'}, {id: 'k2', label: 'หายไป (แก้ไขแล้ว) ในช่วงที่เลือก'}, {id: 'k3', label: 'เปลี่ยนแปลงสุทธิ'}, {id: 'k4', label: 'ยังพบอยู่ ณ วันล่าสุด'}], [
       {id: 'c-range', chart: true, span: 12, title: 'ช่วงวันที่', sub: 'เลือกช่วงเพื่อดูว่ารหัสยาที่ไม่ถูกต้องเพิ่มขึ้นหรือลดลง'},
       {id: 'c-trend', chart: true, span: 12, title: 'จำนวนรหัสยาที่ไม่ถูกต้องตามวันที่บันทึกข้อมูล', sub: 'หน่วยบริการ × รหัสยา ที่ไม่พบในฐานรหัสยา 24 หลัก'},
+      {id: 'c-inc', chart: true, span: 12, title: 'รหัสยาที่ไม่ถูกต้องที่พบเพิ่มขึ้น', sub: 'แยกตามวันที่บันทึกข้อมูล แสดงเฉพาะวันที่มีรายการพบใหม่ — ชื่อยาและหน่วยบริการที่พบ'},
       {id: 'c-hos', chart: true, span: 12, title: 'แนวโน้มรายตัวยาของหน่วยบริการ', sub: 'จำนวนรหัสยาที่ไม่ถูกต้องของหน่วยบริการที่เลือก เรียงตามวันที่ และตัวยาที่พบในแต่ละวัน'},
       {id: 't-items', title: 'รายการรหัสยาที่ไม่ถูกต้อง', span: 12},
     ]);
@@ -775,9 +832,10 @@ const INVALID = {
       for (const x of pts) { const k = x.d.slice(0, 7), a = m.get(k); m.set(k, a ? {...x, label: thMonth(x.d), added: a.added + x.added, gone: a.gone + x.gone} : {...x, label: thMonth(x.d)}); }
       pts = [...m.values()];
     }
-    bars('c-trend', pts.map(x => ({label: x.label, segs: [{v: x.present, color: S1}], text: fmt(x.present),
-      tip: `<b>${x.label}</b>${x.src === 'excel' ? ' (จากไฟล์ Excel)' : ''}<br>${tipRow('รหัสที่ไม่ถูกต้อง', fmt(x.present))}<br>${tipRow('พบใหม่', '+' + fmt(x.added))}<br>${tipRow('หายไป', '−' + fmt(x.gone))}`})), {lw: 110});
+    cols('c-trend', pts.map(x => ({label: x.label, v: x.present, color: S1, text: fmt(x.present),
+      tip: `<b>${x.label}</b>${x.src === 'excel' ? ' (จากไฟล์ Excel)' : ''}<br>${tipRow('รหัสที่ไม่ถูกต้อง', fmt(x.present))}<br>${tipRow('พบใหม่', '+' + fmt(x.added))}<br>${tipRow('หายไป', '−' + fmt(x.gone))}`})));
 
+    this.increase(items, snaps, pts);
     this.hospital(items, snaps, from, to);
 
     const pick = range.mode === 'new' ? x => inR(x.first) : range.mode === 'gone' ? x => inR(x.gone) : x => x.last === latest;
@@ -785,6 +843,33 @@ const INVALID = {
       x.first, x.last, x.last === latest ? 'ยังพบ' : 'หายไปแล้ว', x.all, x.uc]), null);
     tables['t-items'].el.closest('.card').querySelector('h3').firstChild.textContent =
       range.mode === 'new' ? 'รายการที่พบใหม่ในช่วงที่เลือก' : range.mode === 'gone' ? 'รายการที่หายไป (แก้ไขแล้ว) ในช่วงที่เลือก' : 'รายการที่ยังพบอยู่ ณ วันล่าสุด';
+  },
+  // รายการที่พบเพิ่มขึ้นในแต่ละจุดของกราฟแนวโน้ม: ตัวยา → หน่วยบริการที่พบ (ใหม่สุดก่อน)
+  increase(items, snaps, pts) {
+    const H = window.HISTORY[page.year], base = snaps[0].d, MAX = 200;
+    const name = x => H.names[x.code.slice(0, 11)] || 'ไม่พบชื่อยา';
+    const groups = pts.map((p, j) => {   // จุดแรก: เฉพาะที่พบครั้งแรกวันนั้น (ยกเว้นข้อมูลตั้งต้น) / จุดถัดไป: พบครั้งแรกหลังจุดก่อนหน้า
+      const add = items.filter(x => j ? x.first > pts[j - 1].d && x.first <= p.d : x.first === p.d && p.d !== base);
+      const drugs = new Map();
+      for (const x of add) {
+        const g = drugs.get(x.code) || drugs.set(x.code, {code: x.code, name: name(x), hos: []}).get(x.code);
+        g.hos.push(x.hc);
+      }
+      return {p, prev: j ? pts[j - 1] : null, n: add.length,
+        drugs: [...drugs.values()].sort((a, b) => b.hos.length - a.hos.length || a.name.localeCompare(b.name, 'th'))};
+    }).filter(g => g.n).reverse();
+    if (!groups.length) { $('c-inc').innerHTML = '<div class="empty">ไม่พบรหัสยาที่ไม่ถูกต้องที่เพิ่มขึ้นในช่วงที่เลือก</div>'; return; }
+    const hosName = hc => H.hosp[hc]?.[0] || hc;
+    $('c-inc').innerHTML = `<div class="inc">${groups.map((g, i) => {
+      const shown = g.drugs.slice(0, MAX);
+      return `<details${i ? '' : ' open'}><summary><b>${g.p.label}</b>
+        <span class="trend up">▲ พบใหม่ ${fmt(g.n)} รายการ</span>
+        <span class="note" style="margin:0">${g.prev ? `${g.prev.label} → ${g.p.label}: ${fmt(g.prev.present)} → ${fmt(g.p.present)} รายการ` : `ณ ${g.p.label}: ${fmt(g.p.present)} รายการ`} · ${fmt(g.drugs.length)} ตัวยา</span></summary>
+        <table><thead><tr><th style="width:38%">ยาสมุนไพร</th><th>หน่วยบริการที่พบ</th></tr></thead><tbody>
+        ${shown.map(d => `<tr><td>${esc(d.name)}<small>${esc(d.code)}</small></td>
+          <td><div class="hl">${d.hos.map(hc => `<span title="${esc(hc)} · ${esc(H.hosp[hc]?.[1] || '')}">${esc(hosName(hc))}</span>`).join('')}</div></td></tr>`).join('')}
+        </tbody></table>${g.drugs.length > MAX ? `<div class="note" style="padding:0 12px 8px">แสดง ${MAX} จาก ${fmt(g.drugs.length)} ตัวยา — ดูทั้งหมดในตารางด้านล่าง</div>` : ''}</details>`;
+    }).join('')}</div>`;
   },
   // แนวโน้มของหน่วยบริการเดียว: กราฟแท่งตามวันที่ (พบต่อเนื่อง / พบใหม่) + ตารางตัวยา × วันที่
   hospital(items, snaps, from, to) {
