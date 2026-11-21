@@ -1,1 +1,1 @@
-window.DATA_INDEX = [{"year":"2570","dataDate":"21/11/2569 05:12","rows":76809},{"year":"2569","dataDate":"16/11/2569 14:14","rows":201630},{"year":"2568","dataDate":"18/11/2568 02:56","rows":215648}];
+window.DATA_INDEX = [{"year":"2570","dataDate":"22/11/2569 04:02","rows":90415},{"year":"2569","dataDate":"16/11/2569 14:14","rows":201630},{"year":"2568","dataDate":"18/11/2568 02:56","rows":215648}];
